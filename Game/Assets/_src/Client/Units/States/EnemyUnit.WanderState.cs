@@ -1,3 +1,6 @@
+using System.Threading;
+using System.Threading;
+using System.Threading.Tasks;
 using Game.Core;
 using Game.Core.Common.Fsm;
 using Game.Core.Units;
@@ -6,29 +9,33 @@ namespace Game.Client.Units
 {
     public sealed partial class EnemyUnit
     {
-        private sealed class WanderState : IState<EnemyUnit, EnemyState>
+        private sealed class WanderState : IState<EnemyContext, EnemyState>
         {
             public EnemyState Id => EnemyState.Wander;
             private Vector3 _direction;
             private float   _timeLeft;
             private float   _steerTimer;
-            public void Enter(EnemyUnit ctx)
+            public Task Enter(EnemyContext ctx, CancellationToken ct)
             {
+                ctx.View.SetAnimationState(EnemyState.Wander);
                 _direction  = RandomFlatDirection();
-                _timeLeft   = Random.Range(ctx._config.WanderMinDuration, ctx._config.WanderMaxDuration);
+                _timeLeft   = Random.Range(ctx.Unit._config.WanderMinDuration, ctx.Unit._config.WanderMaxDuration);
                 _steerTimer = Random.Range(0.6f, 1.4f);
+                return Task.CompletedTask;
             }
-            public void Exit(EnemyUnit ctx) { }
-            public bool Tick(EnemyUnit ctx, float dt, out EnemyState next)
+            
+            public Task Exit(EnemyContext ctx, CancellationToken ct) => Task.CompletedTask;
+            
+            public bool Tick(EnemyContext ctx, float dt, out EnemyState next)
             {
-                if (!ctx.Stats.Get<HpStat>().IsAlive)
+                if (!ctx.Unit.Stats.Get<HpStat>().IsAlive)
                 {
                     next = EnemyState.Dead;
                     return true;
                 }
-                var target = ctx._session.Player;
+                var target = ctx.Unit._session.Player;
                 if (target != null &&
-                    Vector3.Distance(ctx._transform.position, target.Position) <= ctx._config.AggroRadius)
+                    Vector3.Distance(ctx.Unit._transform.position, target.Position) <= ctx.Unit._config.AggroRadius)
                 {
                     next = EnemyState.Chase;
                     return true;
@@ -41,9 +48,9 @@ namespace Game.Client.Units
                     _steerTimer = Random.Range(0.6f, 1.4f);
                 }
                 var targetRotation = Quaternion.LookRotation(_direction);
-                ctx._transform.SetPositionAndRotation(
-                    ctx.Position + _direction * (ctx._config.WanderSpeed * dt),
-                    Quaternion.Slerp(ctx._transform.rotation, targetRotation, dt * 3f));
+                ctx.Unit._transform.SetPositionAndRotation(
+                    ctx.Unit.Position + _direction * (ctx.Unit._config.WanderSpeed * dt),
+                    Quaternion.Slerp(ctx.Unit._transform.rotation, targetRotation, dt * 3f));
                 _timeLeft -= dt;
                 if (_timeLeft <= 0f) { next = EnemyState.Idle; return true; }
                 next = EnemyState.Wander;

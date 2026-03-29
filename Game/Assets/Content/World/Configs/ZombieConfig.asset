@@ -19,7 +19,7 @@ MonoBehaviour:
   <TargetMask>k__BackingField:
     serializedVersion: 2
     m_Bits: 512
-  <Prefab>k__BackingField: {fileID: 842336797271551310, guid: b2d23cf0dd752f845a1ac31d241544f6, type: 3}
+  <Prefab>k__BackingField: {fileID: 4824156410519721592, guid: b2d23cf0dd752f845a1ac31d241544f6, type: 3}
   <MoveSpeed>k__BackingField: 3
   <AggroRadius>k__BackingField: 35
   <AttackInterval>k__BackingField: 1

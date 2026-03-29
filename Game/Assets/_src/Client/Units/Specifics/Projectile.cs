@@ -11,7 +11,7 @@ namespace Game.Client.Units
     public sealed class Projectile : ITickSystem, IHitHandler
     {
         private readonly ProjectileConfig _config;
-        private readonly ProjectileBaseView _baseView;
+        private readonly ProjectileView _view;
         private readonly Action<Projectile> _onExpire;
         private readonly LayerMask _hitMask;
         private readonly DamageService _damageService;
@@ -24,14 +24,14 @@ namespace Game.Client.Units
 
         public Projectile(
             ProjectileConfig config,
-            ProjectileBaseView baseView,
+            ProjectileView view,
             LayerMask hitMask,
             Action<Projectile> onExpire,
             DamageService damageService,
             HitService hitService)
         {
             _config = config;
-            _baseView = baseView;
+            _view = view;
             _hitMask = hitMask;
             _onExpire = onExpire;
             _damageService = damageService;
@@ -45,7 +45,7 @@ namespace Game.Client.Units
             _direction = direction.normalized;
             _lifeRemaining = _config.Lifetime;
 
-            _baseView.gameObject.SetActive(true);
+            _view.gameObject.SetActive(true);
         }
 
         public void Tick(float dt)
@@ -59,12 +59,12 @@ namespace Game.Client.Units
 
             if (_target != null)
             {
-                var toTarget = _target.Position - _baseView.transform.position;
+                var toTarget = _target.Position - _view.transform.position;
                 if (toTarget.sqrMagnitude > 0.0001f)
                     _direction = toTarget.normalized;
             }
 
-            var origin = _baseView.transform.position;
+            var origin = _view.transform.position;
             var distance = _config.Speed * dt;
             var query = new HitQuery(
                 HitQueryType.SphereCastXZ,
@@ -82,7 +82,7 @@ namespace Game.Client.Units
                 return;
             }
 
-            _baseView.transform.position = origin + _direction * distance;
+            _view.transform.position = origin + _direction * distance;
         }
 
         public void Handle(Unit source, Unit target)
@@ -92,7 +92,7 @@ namespace Game.Client.Units
 
         private void Despawn()
         {
-            _baseView.gameObject.SetActive(false);
+            _view.gameObject.SetActive(false);
             _onExpire?.Invoke(this);
         }
 

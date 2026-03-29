@@ -2,6 +2,7 @@
     "name": "Game.Client",
     "rootNamespace": "Game.Client",
     "references": [
+        "UniTask",
         "Game.Core",
         "com.ftg.observables.runtime",
         "Unity.TextMeshPro",

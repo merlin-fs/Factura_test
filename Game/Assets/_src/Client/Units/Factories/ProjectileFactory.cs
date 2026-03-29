@@ -8,13 +8,13 @@ namespace Game.Client.Units
 {
     public sealed class ProjectileFactory
     {
-        private readonly PrefabPool<ProjectileBaseView> _pool;
+        private readonly PrefabPool<ProjectileView> _pool;
         private readonly TickSystemRegistry         _tickRegistry;
         private readonly DamageService              _damageService;
         private readonly HitService                 _hitService;
 
         public ProjectileFactory(
-            PrefabPool<ProjectileBaseView> pool,
+            PrefabPool<ProjectileView> pool,
             TickSystemRegistry         tickRegistry,
             DamageService              damageService,
             HitService                 hitService)

@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Game.Client.Config;
 using Game.Client.Views;
 using Game.Core;
@@ -17,11 +19,11 @@ namespace Game.Client.Units
         private readonly Transform                           _transform;
         private readonly StateMachine<PlayerUnit, CarState>  _fsm;
 
-        public PlayerUnit(PlayerConfig config, CarBaseView baseView,
+        public PlayerUnit(PlayerConfig config, CarView view,
             TickSystemRegistry tickSystemRegistry, IObjectResolver container) : base(config, container)
         {
 
-            _transform = baseView.transform;
+            _transform = view.transform;
             _speed = config.MoveSpeed;
 
             _fsm = new StateMachine<PlayerUnit, CarState>(this)
@@ -36,8 +38,8 @@ namespace Game.Client.Units
         private sealed class DrivingState : IState<PlayerUnit, CarState>
         {
             public CarState Id => CarState.Driving;
-            public void Enter(PlayerUnit ctx) { }
-            public void Exit(PlayerUnit ctx)  { }
+            public Task Enter(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask; 
+            public Task Exit(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask;
 
             public bool Tick(PlayerUnit ctx, float dt, out CarState next)
             {
@@ -60,8 +62,8 @@ namespace Game.Client.Units
         private sealed class DeadState : IState<PlayerUnit, CarState>
         {
             public CarState Id => CarState.Dead;
-            public void Enter(PlayerUnit ctx) { }
-            public void Exit(PlayerUnit ctx)  { }
+            public Task Enter(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask;
+            public Task Exit(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask;
 
             public bool Tick(PlayerUnit ctx, float dt, out CarState next)
             {

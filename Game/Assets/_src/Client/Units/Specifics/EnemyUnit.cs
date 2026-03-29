@@ -20,30 +20,32 @@ namespace Game.Client.Units
         private const float CullBehindDistance = 10f;
         public override Vector3 Position => _transform.position;
 
-        private readonly Transform                            _transform;
-        private readonly Action<EnemyUnit>                   _onDied;
-        private readonly Action<EnemyUnit>                   _onOutOfRange;
-        private readonly StateMachine<EnemyUnit, EnemyState> _fsm;
-        private readonly EnemyConfig                         _config;
-        private          TickSystemRegistry                  _tickSystemRegistry;
-        private          GameSession                         _session;
-        private          float                               _nextAttackTime;
+        private readonly Transform                              _transform;
+        private readonly Action<EnemyUnit>                     _onDied;
+        private readonly Action<EnemyUnit>                     _onOutOfRange;
+        private readonly StateMachine<EnemyContext, EnemyState> _fsm;
+        private readonly EnemyConfig                           _config;
+        private          TickSystemRegistry                    _tickSystemRegistry;
+        private          GameSession                           _session;
+        private          float                                 _nextAttackTime;
 
         public EnemyUnit(
             EnemyConfig        config,
-            EnemyBaseView          baseView,
+            EnemyView      view,
             Action<EnemyUnit>  onDied,
             Action<EnemyUnit>  onOutOfRange,
             GameSession        session,
             TickSystemRegistry tickSystemRegistry,
             IObjectResolver    container) : base(config, container)
         {
-            _transform    = baseView.transform;
+            _transform    = view.transform;
             _config       = config;
             _onDied       = onDied;
             _onOutOfRange = onOutOfRange;
 
-            _fsm = new StateMachine<EnemyUnit, EnemyState>(this)
+            var context = new EnemyContext(this, view);
+
+            _fsm = new StateMachine<EnemyContext, EnemyState>(context)
                 .Add(new IdleState())
                 .Add(new WanderState())
                 .Add(new ChaseState())
@@ -58,6 +60,13 @@ namespace Game.Client.Units
             _tickSystemRegistry.Register(_fsm);
         }
 
-        public void Dispose() => _tickSystemRegistry.Unregister(_fsm);
+
+        public void Dispose()
+        {
+            _tickSystemRegistry.Unregister(_fsm);
+            _fsm.Dispose();
+        }
     }
 }
+
+

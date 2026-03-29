@@ -7,7 +7,7 @@ namespace Game.Client.Config
     public sealed class ProjectileConfig : ScriptableObject
     {
         [field: SerializeField]
-        public ProjectileBaseView Prefab { get; private set; }
+        public ProjectileView Prefab { get; private set; }
 
         [field: SerializeField, Min(0f)]
         public float Speed { get; private set; } = 12f;

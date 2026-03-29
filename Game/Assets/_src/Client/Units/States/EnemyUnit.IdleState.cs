@@ -1,3 +1,6 @@
+using System.Threading;
+using System.Threading;
+using System.Threading.Tasks;
 using Game.Core;
 using Game.Core.Common.Fsm;
 using Game.Core.Units;
@@ -7,32 +10,34 @@ namespace Game.Client.Units
 {
     public sealed partial class EnemyUnit
     {
-        private sealed class IdleState : IState<EnemyUnit, EnemyState>
+        private sealed class IdleState : IState<EnemyContext, EnemyState>
         {
             public EnemyState Id => EnemyState.Idle;
 
             private float _timeLeft;
 
-            public void Enter(EnemyUnit ctx)
+            public Task Enter(EnemyContext ctx, CancellationToken ct)
             {
+                ctx.View.SetAnimationState(EnemyState.Idle);
                 _timeLeft = Random.Range(
-                    ctx._config.WanderIdleMinDuration,
-                    ctx._config.WanderIdleMaxDuration);
+                    ctx.Unit._config.WanderIdleMinDuration,
+                    ctx.Unit._config.WanderIdleMaxDuration);
+                return Task.CompletedTask;
             }
 
-            public void Exit(EnemyUnit ctx) { }
+            public Task Exit(EnemyContext ctx, CancellationToken ct) => Task.CompletedTask;
 
-            public bool Tick(EnemyUnit ctx, float dt, out EnemyState next)
+            public bool Tick(EnemyContext ctx, float dt, out EnemyState next)
             {
-                if (!ctx.Stats.Get<HpStat>().IsAlive)
+                if (!ctx.Unit.Stats.Get<HpStat>().IsAlive)
                 {
                     next = EnemyState.Dead;
                     return true;
                 }
 
-                var target = ctx._session.Player;
+                var target = ctx.Unit._session.Player;
                 if (target != null &&
-                    Vector3.Distance(ctx._transform.position, target.Position) <= ctx._config.AggroRadius)
+                    Vector3.Distance(ctx.Unit._transform.position, target.Position) <= ctx.Unit._config.AggroRadius)
                 {
                     next = EnemyState.Chase;
                     return true;
@@ -51,4 +56,3 @@ namespace Game.Client.Units
         }
     }
 }
-

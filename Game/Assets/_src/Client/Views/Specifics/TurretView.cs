@@ -6,7 +6,7 @@ namespace Game.Client.Views
     /// MonoBehaviour-хост башти.
     /// Містить посилання на дуло (Muzzle), з якого вилітають снаряди та починається лазерний приціл.
     /// </summary>
-    public sealed class TurretBaseView : BaseView
+    public sealed class TurretView : BaseView
     {
         [SerializeField] private Transform muzzle;
 

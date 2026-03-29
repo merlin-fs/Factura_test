@@ -1,3 +1,6 @@
+using System.Threading;
+using System.Threading;
+using System.Threading.Tasks;
 using Game.Core;
 using Game.Core.Common.Fsm;
 using Game.Core.Units;
@@ -6,36 +9,41 @@ namespace Game.Client.Units
 {
     public sealed partial class EnemyUnit
     {
-        private sealed class ChaseState : IState<EnemyUnit, EnemyState>
+        private sealed class ChaseState : IState<EnemyContext, EnemyState>
         {
             public EnemyState Id => EnemyState.Chase;
-            public void Enter(EnemyUnit ctx) { }
-            public void Exit(EnemyUnit ctx)  { }
-            public bool Tick(EnemyUnit ctx, float dt, out EnemyState next)
+            public Task Enter(EnemyContext ctx, CancellationToken ct)
             {
-                if (!ctx.Stats.Get<HpStat>().IsAlive)
+                ctx.View.SetAnimationState(EnemyState.Chase);
+                return Task.CompletedTask;
+            }
+            public Task Exit(EnemyContext ctx, CancellationToken ct) => Task.CompletedTask;
+            
+            public bool Tick(EnemyContext ctx, float dt, out EnemyState next)
+            {
+                if (!ctx.Unit.Stats.Get<HpStat>().IsAlive)
                 {
                     next = EnemyState.Dead;
                     return true;
                 }
-                var target = ctx._session.Player;
+                var target = ctx.Unit._session.Player;
                 if (target == null) { next = EnemyState.Chase; return false; }
-                var origin    = ctx.Position;
+                var origin    = ctx.Unit.Position;
                 var toTarget  = target.Position - origin;
-                var context   = new AttackContext(ctx, origin, toTarget.normalized, ctx.TargetMask, target);
-                if (ctx.Skills.Get<IAttackSkill>().CanUse(context))
+                var context   = new AttackContext(ctx.Unit, origin, toTarget.normalized, ctx.Unit.TargetMask, target);
+                if (ctx.Unit.Skills.Get<IAttackSkill>().CanUse(context))
                 {
                     next = EnemyState.Attack;
                     return true;
                 }
                 var dist = toTarget.magnitude;
                 var dir  = toTarget / dist;
-                ctx._transform.SetPositionAndRotation(
-                    ctx.Position + dir * (ctx._config.MoveSpeed * dt),
+                ctx.Unit._transform.SetPositionAndRotation(
+                    ctx.Unit.Position + dir * (ctx.Unit._config.MoveSpeed * dt),
                     Quaternion.LookRotation(dir));
                 // Cull � enemy is far behind the player
-                if (target.Position.z - ctx.Position.z > CullBehindDistance)
-                    ctx._onOutOfRange?.Invoke(ctx);
+                if (target.Position.z - ctx.Unit.Position.z > CullBehindDistance)
+                    ctx.Unit._onOutOfRange?.Invoke(ctx.Unit);
                 next = EnemyState.Chase;
                 return false;
             }

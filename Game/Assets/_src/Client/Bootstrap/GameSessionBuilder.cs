@@ -55,14 +55,14 @@ namespace Game.Client.Bootstrap
                 builder.Register<HitService>(Lifetime.Scoped);
 
                 // --- Pools ---
-                builder.Register<PrefabPool<EnemyBaseView>>(c => new PrefabPool<EnemyBaseView>((prefab, pos, rot) =>
+                builder.Register<PrefabPool<EnemyView>>(c => new PrefabPool<EnemyView>((prefab, pos, rot) =>
                 {
                     var go = Object.Instantiate(prefab, pos, rot);
                     c.InjectGameObject(go.gameObject);
                     return go;
                 }), Lifetime.Scoped);
 
-                builder.Register<PrefabPool<ProjectileBaseView>>(c => new PrefabPool<ProjectileBaseView>((prefab, pos, rot) =>
+                builder.Register<PrefabPool<ProjectileView>>(c => new PrefabPool<ProjectileView>((prefab, pos, rot) =>
                 {
                     var go = Object.Instantiate(prefab, pos, rot);
                     c.InjectGameObject(go.gameObject);
@@ -100,11 +100,11 @@ namespace Game.Client.Bootstrap
             var session      = sessionContainer.Resolve<GameSession>();
             var tickRegistry = sessionContainer.Resolve<TickSystemRegistry>();
 
-            var carView = _refs.CarTransform.GetComponent<CarBaseView>();
+            var carView = _refs.CarTransform.GetComponent<CarView>();
             var player  = new PlayerUnit(_refs.PlayerConfig, carView, tickRegistry, sessionContainer);
             session.Initialize(player);
 
-            var turretView = _refs.TurretTransform.GetComponent<TurretBaseView>();
+            var turretView = _refs.TurretTransform.GetComponent<TurretView>();
             _ = new Turret(
                 player,
                 turretView,

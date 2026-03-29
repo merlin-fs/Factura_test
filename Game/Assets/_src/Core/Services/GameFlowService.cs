@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Game.Core.Common.Fsm;
 using Game.Core.Session;
 using Game.Core.Units;
@@ -42,8 +44,8 @@ namespace Game.Core.Services
         private sealed class WaitingToStartState : IState<GameFlowService, GameState>
         {
             public GameState Id => GameState.WaitingToStart;
-            public void Enter(GameFlowService ctx) { }
-            public void Exit(GameFlowService ctx)  { }
+            public Task Enter(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
+            public Task Exit(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
 
             public bool Tick(GameFlowService ctx, float dt, out GameState next)
             {
@@ -57,12 +59,13 @@ namespace Game.Core.Services
         {
             public GameState Id => GameState.Playing;
 
-            public void Enter(GameFlowService ctx)
+            public Task Enter(GameFlowService ctx, CancellationToken ct)
             {
                 ctx._session.Begin();
+                return Task.CompletedTask;
             }
 
-            public void Exit(GameFlowService ctx) { }
+            public Task Exit(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
 
             public bool Tick(GameFlowService ctx, float dt, out GameState next)
             {
@@ -90,12 +93,13 @@ namespace Game.Core.Services
         {
             public GameState Id => GameState.Win;
 
-            public void Enter(GameFlowService ctx)
+            public Task Enter(GameFlowService ctx, CancellationToken ct)
             {
                 ctx._session.FinishWin();
+                return Task.CompletedTask;
             }
 
-            public void Exit(GameFlowService ctx) { }
+            public Task Exit(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
 
             public bool Tick(GameFlowService ctx, float dt, out GameState next)
             {
@@ -109,12 +113,13 @@ namespace Game.Core.Services
         {
             public GameState Id => GameState.Lose;
 
-            public void Enter(GameFlowService ctx)
+            public Task Enter(GameFlowService ctx, CancellationToken ct)
             {
                 ctx._session.FinishLose();
+                return Task.CompletedTask;
             }
 
-            public void Exit(GameFlowService ctx) { }
+            public Task Exit(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
 
             public bool Tick(GameFlowService ctx, float dt, out GameState next)
             {

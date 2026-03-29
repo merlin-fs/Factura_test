@@ -16,7 +16,7 @@ namespace Game.Client.Units
     /// </summary>
     public sealed class Turret : ITickSystem, IDisposable
     {
-        private readonly TurretBaseView            _baseView;
+        private readonly TurretView            _view;
         private readonly TurretConfig          _config;
         private readonly IHorizontalDragInput  _dragInput;
         private readonly IFireInput            _fireInput;
@@ -28,22 +28,22 @@ namespace Game.Client.Units
         private float _initialYaw;
         public Turret(
             Unit                 playerUnit,
-            TurretBaseView           baseView,
+            TurretView           view,
             TurretConfig         config,
             IHorizontalDragInput dragInput,
             IFireInput           fireInput,
             GameSession          session,
             TickSystemRegistry   tickRegistry)
         {
-            _baseView          = baseView;
+            _view          = view;
             _config        = config;
             _dragInput     = dragInput;
             _fireInput     = fireInput;
             _session       = session;
             _tickRegistry  = tickRegistry;
             _fireTimer     = 0f;
-            _initialYaw    = baseView.transform.eulerAngles.y;
-            _aimResolver = new TurretAimResolver(baseView, config, playerUnit);
+            _initialYaw    = view.transform.eulerAngles.y;
+            _aimResolver = new TurretAimResolver(view, config, playerUnit);
             _attackSkill = session.Player.Skills.Has<ProjectileAttackSkill>()
                 ? session.Player.Skills.Get<ProjectileAttackSkill>()
                 : null;
@@ -63,14 +63,14 @@ namespace Game.Client.Units
             var dx = _dragInput.ReadDeltaX();
             if (Mathf.Abs(dx) > 0.0001f)
             {
-                _baseView.transform.Rotate(0f, dx * _config.RotateSpeed * dt, 0f, Space.World);
+                _view.transform.Rotate(0f, dx * _config.RotateSpeed * dt, 0f, Space.World);
                 if (_config.RotationLimit > 0f)
                 {
-                    var delta = Mathf.DeltaAngle(_initialYaw, _baseView.transform.eulerAngles.y);
+                    var delta = Mathf.DeltaAngle(_initialYaw, _view.transform.eulerAngles.y);
                     delta = Mathf.Clamp(delta, -_config.RotationLimit, _config.RotationLimit);
-                    var euler = _baseView.transform.eulerAngles;
+                    var euler = _view.transform.eulerAngles;
                     euler.y = _initialYaw + delta;
-                    _baseView.transform.eulerAngles = euler;
+                    _view.transform.eulerAngles = euler;
                 }
             }
             // --- Continuous fire with cooldown ---
@@ -79,7 +79,7 @@ namespace Game.Client.Units
             {
                 _fireTimer = _config.FireCooldown;
                 var context = new AttackContext(
-                    _session.Player, _baseView.Muzzle.position,
+                    _session.Player, _view.Muzzle.position,
                     _aimResolver.FireDirection, _session.Player.TargetMask, null);
                 _attackSkill?.Use(context);
             }

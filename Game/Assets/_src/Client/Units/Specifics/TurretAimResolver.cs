@@ -13,7 +13,7 @@ namespace Game.Client.Units
     /// </summary>
     public sealed class TurretAimResolver
     {
-        private readonly TurretBaseView   _baseView;
+        private readonly TurretView   _view;
         private readonly TurretConfig _config;
         private readonly Unit         _playerUnit;
 
@@ -32,9 +32,9 @@ namespace Game.Client.Units
         private static readonly Color ColorOnTarget  = new Color(1f, 0.15f, 0.15f, 1f);
         private static readonly Color ColorSearching = new Color(1f, 0.85f, 0f,   0.7f);
 
-        public TurretAimResolver(TurretBaseView baseView, TurretConfig config, Unit playerUnit)
+        public TurretAimResolver(TurretView view, TurretConfig config, Unit playerUnit)
         {
-            _baseView       = baseView;
+            _view       = view;
             _config     = config;
             _playerUnit = playerUnit;
             SetupAimLine();
@@ -53,8 +53,8 @@ namespace Game.Client.Units
 
         private void SetupAimLine()
         {
-            _aimLine = _baseView.gameObject.GetComponent<LineRenderer>()
-                       ?? _baseView.gameObject.AddComponent<LineRenderer>();
+            _aimLine = _view.gameObject.GetComponent<LineRenderer>()
+                       ?? _view.gameObject.AddComponent<LineRenderer>();
 
             _aimLine.positionCount     = 2;
             _aimLine.useWorldSpace     = true;
@@ -75,13 +75,13 @@ namespace Game.Client.Units
         /// </summary>
         private void ComputeAim()
         {
-            var muzzlePos   = _baseView.Muzzle.position;
-            var flatForward = new Vector3(_baseView.Muzzle.forward.x, 0f, _baseView.Muzzle.forward.z);
+            var muzzlePos   = _view.Muzzle.position;
+            var flatForward = new Vector3(_view.Muzzle.forward.x, 0f, _view.Muzzle.forward.z);
 
             if (flatForward.sqrMagnitude < 0.0001f)
             {
-                AimPoint      = muzzlePos + _baseView.Muzzle.forward * _config.AimRange;
-                FireDirection = _baseView.Muzzle.forward;
+                AimPoint      = muzzlePos + _view.Muzzle.forward * _config.AimRange;
+                FireDirection = _view.Muzzle.forward;
                 HasAimTarget  = false;
                 return;
             }
@@ -111,7 +111,7 @@ namespace Game.Client.Units
         private void UpdateAimLine()
         {
             _aimLine.enabled = true;
-            _aimLine.SetPosition(0, _baseView.Muzzle.position);
+            _aimLine.SetPosition(0, _view.Muzzle.position);
             _aimLine.SetPosition(1, AimPoint);
 
             var color = HasAimTarget ? ColorOnTarget : ColorSearching;

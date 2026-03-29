@@ -11,14 +11,14 @@ namespace Game.Client.Units
 {
     public sealed class EnemyFactory : IEnemyFactory
     {
-        private readonly PrefabPool<EnemyBaseView> _pool;
+        private readonly PrefabPool<EnemyView> _pool;
         private readonly EnemyRegistry         _registry;
         private readonly GameSession           _session;
         private readonly TickSystemRegistry    _tickRegistry;
         private readonly IObjectResolver       _container;
 
         public EnemyFactory(
-            PrefabPool<EnemyBaseView> pool,
+            PrefabPool<EnemyView> pool,
             EnemyRegistry         registry,
             GameSession           session,
             TickSystemRegistry    tickRegistry,
