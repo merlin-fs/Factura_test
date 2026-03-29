@@ -6,7 +6,8 @@
         "com.ftg.observables.runtime",
         "Unity.TextMeshPro",
         "Unity.InputSystem",
-        "Reflex"
+        "VContainer",
+        "VContainer.Unity"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

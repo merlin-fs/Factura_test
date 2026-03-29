@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PlayerConfig
   m_EditorClassIdentifier: Game.Client::Game.Client.Config.PlayerConfig
   stats:
-  - rid: 4280838092232065090
+  - rid: 4280838138503364683
   skills:
   - rid: 4280838117031149632
   - rid: 4280838117031149633
@@ -26,10 +26,6 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 4280838092232065090
-      type: {class: HpStat, ns: Game.Core.Units, asm: Game.Core}
-      data:
-        max: 100
     - rid: 4280838117031149632
       type: {class: ProjectileAttackSkill, ns: Game.Client.Units, asm: Game.Client}
       data:
@@ -41,3 +37,7 @@ MonoBehaviour:
         damage: 100
         length: 3
         cooldown: 0.1
+    - rid: 4280838138503364683
+      type: {class: HpStat, ns: Game.Core.Units, asm: Game.Core}
+      data:
+        max: 100

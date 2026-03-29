@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Game.Core.Common;
 using Game.Core.Services;
 using Game.Core.Units;
-using Reflex.Attributes;
+using VContainer;
 using UnityEngine;
 
 namespace Game.Client.Skills
@@ -11,33 +11,33 @@ namespace Game.Client.Skills
     [Serializable]
     public sealed class RamDamageSkill : ISkill, IHitHandler, ITickSystem
     {
-        [SerializeField, Min(0f)] private float radius = 1.5f;
-        [SerializeField, Min(0)]  private int   damage = 10;
-        [SerializeField, Min(0f)] private float length = 3f;
+        [SerializeField, Min(0f)] private float radius  = 1.5f;
+        [SerializeField, Min(0)]  private int   damage  = 10;
+        [SerializeField, Min(0f)] private float length  = 3f;
         [SerializeField, Min(0f)] private float cooldown = 0.5f;
-        
-        private DamageService _damageService;
-        private HitService _hitService;
+
+        private DamageService      _damageService;
+        private HitService         _hitService;
         private TickSystemRegistry _tickRegistry;
 
         private readonly Dictionary<Unit, float> _cooldowns = new();
+
+        // Required by Unity serialization.
+        public RamDamageSkill() { }
 
         [Inject]
         private void Inject(DamageService damageService, HitService hitService, TickSystemRegistry tickRegistry)
         {
             _damageService = damageService;
-            _hitService = hitService;
-            _tickRegistry = tickRegistry;
-        }
-        public void Initialize()
-        {
+            _hitService    = hitService;
+            _tickRegistry  = tickRegistry;
             _tickRegistry.Register(this);
         }
 
-        public void Dispose()
-        {
-            _tickRegistry.Unregister(this);
-        }
+        public ISkill Clone()
+            => new RamDamageSkill { radius = radius, damage = damage, length = length, cooldown = cooldown };
+
+        public void Dispose() => _tickRegistry?.Unregister(this);
         
         public void Tick(float dt)
         {
@@ -78,7 +78,5 @@ namespace Game.Client.Skills
         {
             Apply(source, target);
         }
-
-        public ISkill Clone() => new RamDamageSkill{ radius = radius, damage = damage, length = length, cooldown = cooldown };
     }
 }

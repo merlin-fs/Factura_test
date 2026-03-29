@@ -1,6 +1,6 @@
 using Game.Core.Services;
 using Game.Core.Units;
-using Reflex.Attributes;
+using VContainer;
 using UnityEngine;
 
 namespace Game.Client.Views

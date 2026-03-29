@@ -1,37 +1,36 @@
 using Game.Core.Session;
 using Game.Client.Bootstrap;
 using Game.Client.Input;
-using Game.Core.Common;
-using Game.Core.Events;
-using Game.Core.Services;
-using Reflex.Core;
-using Reflex.Enums;
+using VContainer;
+using VContainer.Unity;
 using UnityEngine;
-using Resolution = Reflex.Enums.Resolution;
 
 namespace Game.Client.DI
 {
+    /// <summary>
+    /// Root-level (scene-wide) bindings only:
+    /// scene references, input wrappers, session infrastructure.
+    /// Everything gameplay-session-scoped lives in GameSessionBuilder.
+    /// </summary>
     public sealed class GameplayInstaller : MonoBehaviour, IInstaller
     {
         [SerializeField] private GameplaySceneRefs sceneRefs;
 
-        public void InstallBindings(ContainerBuilder builder)
+        public void Install(IContainerBuilder builder)
         {
-            builder.RegisterValue(sceneRefs);
+            builder.RegisterInstance(sceneRefs);
 
-            builder.RegisterFactory<IHorizontalDragInput>(c => new HorizontalDragInput(sceneRefs.HorizontalDragAction), Lifetime.Singleton, Resolution.Lazy);
-            builder.RegisterFactory<IFireInput>(c => new FireInput(sceneRefs.FireAction), Lifetime.Singleton, Resolution.Lazy);
+            // Input wrappers — одна пара на всё время жизни сцены
+            builder.Register<IHorizontalDragInput>(
+                _ => new HorizontalDragInput(sceneRefs.HorizontalDragAction),
+                Lifetime.Singleton);
+            builder.Register<IFireInput>(
+                _ => new FireInput(sceneRefs.FireAction),
+                Lifetime.Singleton);
 
-            builder.RegisterType<SessionCoordinator>(Lifetime.Singleton);
-            builder.RegisterType<ISessionBuilder, GameSessionBuilder>(Lifetime.Singleton);
-            
-            builder.RegisterType<IUnitRegistry, UnitRegistry>(Lifetime.Singleton);
-            builder.RegisterType<ITargetsProvider, TargetsProvider>(Lifetime.Singleton);
-            builder.RegisterType<HitService>(Lifetime.Singleton);
-
-            builder.RegisterType<DamageService>(Lifetime.Singleton);
-            builder.RegisterType<TickSystemRegistry>(Lifetime.Singleton);
-            builder.RegisterType<GameEvents>(Lifetime.Singleton);
+            // Session infrastructure
+            builder.Register<SessionCoordinator>(Lifetime.Singleton);
+            builder.Register<ISessionBuilder, GameSessionBuilder>(Lifetime.Singleton);
         }
     }
 }

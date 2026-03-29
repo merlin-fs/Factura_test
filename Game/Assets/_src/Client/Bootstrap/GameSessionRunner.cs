@@ -3,7 +3,7 @@ using Game.Core.Common;
 using Game.Core.Services;
 using Game.Client.Input;
 using Game.Client.Services;
-using Reflex.Core;
+using VContainer;
 
 namespace Game.Client.Bootstrap
 {
@@ -13,7 +13,7 @@ namespace Game.Client.Bootstrap
     /// </summary>
     public sealed class GameSessionRunner : ITickSystem, IDisposable
     {
-        private readonly Container                  _sessionContainer;
+        private readonly IObjectResolver            _sessionContainer;
         private readonly TickSystemRegistry         _tickRegistry;
         private readonly GameFlowService            _flowService;
         private readonly RoadSpawnService           _roadSpawn;
@@ -21,7 +21,7 @@ namespace Game.Client.Bootstrap
         private readonly CameraFollowService        _cameraFollow;
         private readonly IFireInput                 _fireInput;
 
-        public GameSessionRunner(Container sessionContainer)
+        public GameSessionRunner(IObjectResolver sessionContainer)
         {
             _sessionContainer = sessionContainer;
             _tickRegistry     = sessionContainer.Resolve<TickSystemRegistry>();

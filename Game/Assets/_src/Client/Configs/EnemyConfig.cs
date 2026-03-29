@@ -8,7 +8,7 @@ namespace Game.Client.Config
     public sealed class EnemyConfig : UnitConfig
     {
         [field: SerializeField]
-        public EnemyView Prefab { get; private set; }
+        public EnemyBaseView Prefab { get; private set; }
 
         [field: SerializeField, Min(0f)]
         public float MoveSpeed { get; private set; } = 4f;

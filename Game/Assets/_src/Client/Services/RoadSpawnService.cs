@@ -1,36 +1,32 @@
 using System.Linq;
-using Game.Core.Common;
 using Game.Core.Session;
 using Game.Client.Config;
-using Game.Client.Views;
 using Game.Core.Units;
-using Reflex.Attributes;
+using Game.Core.Services;
 using UnityEngine;
 
 namespace Game.Client.Services
 {
     public sealed class RoadSpawnService
     {
-        private readonly LevelConfig _levelConfig;
-        private GameSession _session;
-        private IEnemyFactory _enemyFactory;
-        private PrefabPool<EnemyView> _enemyPool;
+        private readonly LevelConfig   _levelConfig;
+        private readonly GameSession   _session;
+        private readonly IEnemyFactory _enemyFactory;
+        private readonly EnemyRegistry _enemyRegistry;
 
         private float _nextSpawnAtCarZ;
         private bool  _initialized;
 
-        public RoadSpawnService(LevelConfig levelConfig)
+        public RoadSpawnService(
+            LevelConfig   levelConfig,
+            GameSession   session,
+            IEnemyFactory enemyFactory,
+            EnemyRegistry enemyRegistry)
         {
-            _levelConfig  = levelConfig;
-        }
-
-        [Inject]
-        private void Inject(GameSession session, IEnemyFactory enemyFactory,
-            PrefabPool<EnemyView> enemyPool)
-        {
-            _session      = session;
-            _enemyFactory = enemyFactory;
-            _enemyPool    = enemyPool;
+            _levelConfig   = levelConfig;
+            _session       = session;
+            _enemyFactory  = enemyFactory;
+            _enemyRegistry = enemyRegistry;
         }
 
         public void Tick(float deltaTime)
@@ -45,12 +41,14 @@ namespace Game.Client.Services
 
             if (!_initialized)
             {
-                _initialized        = true;
-                _nextSpawnAtCarZ    = _session.StartPositionZ + spawnConfig.InitialSpawnDistance;
+                _initialized     = true;
+                _nextSpawnAtCarZ = _session.StartPositionZ + spawnConfig.InitialSpawnDistance;
             }
 
             if (carZ < _nextSpawnAtCarZ) return;
-            if (_enemyPool.ActiveCount >= spawnConfig.MaxAliveEnemies) return;
+
+            // LiveCount — authoritative live-enemy counter (not pool's ActiveCount)
+            if (_enemyRegistry.LiveCount >= spawnConfig.MaxAliveEnemies) return;
 
             var pattern = PickPattern(spawnConfig);
             if (pattern == null || pattern.Entries.Length == 0)

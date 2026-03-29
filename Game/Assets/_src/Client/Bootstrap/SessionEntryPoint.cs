@@ -1,5 +1,5 @@
 using Game.Core.Session;
-using Reflex.Attributes;
+using VContainer;
 using UnityEngine;
 
 namespace Game.Client.Bootstrap

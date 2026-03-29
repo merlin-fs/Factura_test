@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ZombieConfig
   m_EditorClassIdentifier: Game.Client::Game.Client.Config.EnemyConfig
   stats:
-  - rid: 4280838092232065089
+  - rid: 4280838138503364681
   skills:
   - rid: 4280838117031149631
   <TargetMask>k__BackingField:
@@ -32,12 +32,12 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 4280838092232065089
-      type: {class: HpStat, ns: Game.Core.Units, asm: Game.Core}
-      data:
-        max: 200
     - rid: 4280838117031149631
       type: {class: MeleeAttackSkill, ns: Game.Client.Units, asm: Game.Client}
       data:
         radius: 1.5
         damage: 20
+    - rid: 4280838138503364681
+      type: {class: HpStat, ns: Game.Core.Units, asm: Game.Core}
+      data:
+        max: 100

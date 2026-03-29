@@ -8,7 +8,7 @@ namespace Game.Client.Config
     public sealed class PlayerConfig : UnitConfig
     {
         [field: SerializeField]
-        public CarView Prefab { get; private set; }
+        public CarBaseView Prefab { get; private set; }
 
         [field: SerializeField, Min(0f)]
         public float MoveSpeed { get; private set; } = 4f;
