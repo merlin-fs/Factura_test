@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2be56283a4d04adda39fbdacfe61a48d, type: 3}
+  m_Name: LevelConfig
+  m_EditorClassIdentifier: Game.Client::Game.Client.Config.LevelConfig
+  <LevelLength>k__BackingField: 300
+  <SpawnAheadDistance>k__BackingField: 20
+  <SpawnSpreadRadius>k__BackingField: 10
+  <RoadSpawn>k__BackingField: {fileID: 11400000, guid: 7c48f14bd2a13d0489d133305cabd304, type: 2}

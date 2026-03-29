@@ -1,0 +1,7 @@
+root = true
+
+[*.cs]
+# Unity + Assembly Definition projects: namespace root determined by .asmdef, not file path
+dotnet_diagnostic.IDE0130.severity = none
+resharper_check_namespace = false
+

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fcedbfdec284e1fb6d7de105a8f1f97, type: 3}
+  m_Name: ZombieSlowConfig
+  m_EditorClassIdentifier: Game.Client::Game.Client.Config.EnemyConfig
+  stats:
+  - rid: 4280838092232065089
+  skills:
+  - rid: 4280838117031149631
+  <TargetMask>k__BackingField:
+    serializedVersion: 2
+    m_Bits: 512
+  <Prefab>k__BackingField: {fileID: 842336797271551310, guid: 0163c43b3f8f7bb448ccd213f0f8bcd9, type: 3}
+  <MoveSpeed>k__BackingField: 2
+  <AggroRadius>k__BackingField: 25
+  <AttackInterval>k__BackingField: 1
+  <HitRadius>k__BackingField: 0.5
+  <WanderSpeed>k__BackingField: 0.7
+  <WanderMinDuration>k__BackingField: 2
+  <WanderMaxDuration>k__BackingField: 5
+  <WanderIdleMinDuration>k__BackingField: 1
+  <WanderIdleMaxDuration>k__BackingField: 3
+  references:
+    version: 2
+    RefIds:
+    - rid: 4280838092232065089
+      type: {class: HpStat, ns: Game.Core.Units, asm: Game.Core}
+      data:
+        max: 100
+    - rid: 4280838117031149631
+      type: {class: MeleeAttackSkill, ns: Game.Client.Units, asm: Game.Client}
+      data:
+        radius: 1.5
+        damage: 10

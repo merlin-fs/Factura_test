@@ -1,0 +1,9 @@
+{
+  "name": "com.ftg.editor",
+  "displayName": "FTg Editor",
+  "author": "FTg studio",
+  "version": "0.0.1",
+  "unity": "6000.0",
+  "description": "Editor utilities: SelectTypeAttribute, SelectTypeDrawer and related reflection tools."
+}
+

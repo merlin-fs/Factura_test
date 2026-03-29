@@ -1,0 +1,223 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe04f8cfca4154d42b8a3d1334c70dd2, type: 3}
+  m_Name: RoadSpawnConfig
+  m_EditorClassIdentifier: Game.Client::Game.Client.Config.RoadSpawnConfig
+  <InitialSpawnDistance>k__BackingField: 3
+  <MinSpawnAheadDistance>k__BackingField: 82.4
+  <MaxSpawnAheadDistance>k__BackingField: 125
+  <MinDistanceBetweenGroups>k__BackingField: 20
+  <MaxDistanceBetweenGroups>k__BackingField: 28
+  <MaxAliveEnemies>k__BackingField: 123
+  <SpawnY>k__BackingField: 0
+  <LaneOffsetsX>k__BackingField:
+  - -3.5
+  - 0
+  - 3.5
+  - 1.56
+  - -1.85
+  patterns:
+  - weight: 4
+    entries:
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 0
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 0
+      forwardJitter: 10.93
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 0
+      lateralOffset: 0.54
+      lateralJitter: 0.24
+      forwardOffset: 0
+      forwardJitter: 2.54
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: 0.56
+      lateralJitter: 0
+      forwardOffset: -1.5
+      forwardJitter: 6.09
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: -0.54
+      lateralJitter: 0.91
+      forwardOffset: -1.5
+      forwardJitter: 2.67
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: -1.5
+      forwardJitter: 6.3
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: -1.5
+      forwardJitter: 8.28
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: -1.5
+      forwardJitter: 4.17
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: -0.66
+      lateralJitter: 0.57
+      forwardOffset: -1.5
+      forwardJitter: 9.07
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: -1.5
+      forwardJitter: 4.54
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: -0.42
+      lateralJitter: 0
+      forwardOffset: -0.89
+      forwardJitter: 10.79
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: -0.42
+      lateralJitter: 0
+      forwardOffset: -1.5
+      forwardJitter: 9.28
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: -0.42
+      lateralJitter: 0
+      forwardOffset: -1.5
+      forwardJitter: 3.23
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: -0.42
+      lateralJitter: 0
+      forwardOffset: -1.5
+      forwardJitter: 3.12
+  - weight: 2
+    entries:
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 0
+      laneIndex: 1
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 0
+      forwardJitter: 5.37
+    - enemyConfig: {fileID: 11400000, guid: 30dcf87abad0d6e4c9505026b26b0251, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 0
+      forwardJitter: 7.71
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 0
+      forwardJitter: 13.21
+    - enemyConfig: {fileID: 11400000, guid: 30dcf87abad0d6e4c9505026b26b0251, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 0
+      forwardJitter: 12.6
+    - enemyConfig: {fileID: 11400000, guid: 30dcf87abad0d6e4c9505026b26b0251, type: 2}
+      useRandomLane: 1
+      laneIndex: 1
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 0
+      forwardJitter: 5.19
+  - weight: 1
+    entries:
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 0
+      laneIndex: 0
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 0
+      forwardJitter: 7.21
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 0
+      laneIndex: 1
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 1
+      forwardJitter: 11.35
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 0
+      laneIndex: 2
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 2
+      forwardJitter: 15.33
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 2
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 2
+      forwardJitter: 6.81
+    - enemyConfig: {fileID: 11400000, guid: 30dcf87abad0d6e4c9505026b26b0251, type: 2}
+      useRandomLane: 1
+      laneIndex: 2
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 2
+      forwardJitter: 9.15
+    - enemyConfig: {fileID: 11400000, guid: 30dcf87abad0d6e4c9505026b26b0251, type: 2}
+      useRandomLane: 1
+      laneIndex: 2
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 2
+      forwardJitter: 6.96
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 2
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 2
+      forwardJitter: 10.17
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 2
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 2
+      forwardJitter: 12.31
+    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
+      useRandomLane: 1
+      laneIndex: 2
+      lateralOffset: 0
+      lateralJitter: 0
+      forwardOffset: 2
+      forwardJitter: 10.35
