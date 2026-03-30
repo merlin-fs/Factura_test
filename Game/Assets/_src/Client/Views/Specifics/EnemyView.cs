@@ -1,33 +1,63 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Client.Vfx;
 using Game.Core;
 using UnityEngine;
+using VContainer;
 
 namespace Game.Client.Views
 {
+    /// <summary>
+    /// MonoBehaviour-хост ворожого юніта. Управляє анімацією, VFX та точкою прицілювання.
+    /// Вся ігрова логіка знаходиться у <see cref="Game.Client.Units.EnemyUnit"/>.
+    /// </summary>
     public sealed class EnemyView : BaseView
     {
         private static readonly int StateHash = Animator.StringToHash("State");
 
-        [SerializeField] private Animator _animator;
-        public Animator Animator => _animator;
+        [SerializeField] private Animator animator;
+        [SerializeField] private Transform vfxRoot;
+        [SerializeField] private Transform aimPoint;
 
-        public void SetAnimationState(EnemyState state)
-            => _animator?.SetInteger(StateHash, (int)state);
+        [Inject] private VfxManager _vfxManager;
+
+        /// <summary>Аніматор ворога.</summary>
+        public Animator Animator => animator;
+        /// <summary>Точка прицілювання у світовому просторі.</summary>
+        public Transform AimPoint  => aimPoint;
 
         /// <summary>
-        /// Ожидает полного проигрывания текущей анимации (normalizedTime >= 1).
-        /// Сначала пропускает один кадр, чтобы Animator успел сменить состояние.
+        /// Встановлює ціле значення параметра «State» аніматора відповідно до стану FSM.
         /// </summary>
-        public async UniTask WaitForAnimationComplete(CancellationToken ct = default)
-        {
-            if (_animator == null) return;
+        /// <param name="state">Стан ворога.</param>
+        public void SetAnimationState(EnemyState state) => animator?.SetInteger(StateHash, (int)state);
 
-            // один кадр — чтобы Animator обработал смену параметра State
-            await UniTask.NextFrame(ct);
+        /// <summary>
+        /// Відтворює VFX-ефект за ідентифікатором у позиції кореня ефектів.
+        /// </summary>
+        /// <param name="vfxId">Ідентифікатор ефекту у <see cref="VfxManager"/>.</param>
+        public void PlayVfx(string vfxId)
+        {
+            _vfxManager.Play(vfxId, vfxRoot.position, vfxRoot.rotation);
+        }
+
+        /// <summary>
+        /// Асинхронно очікує повного завершення анімації вказаного стану.
+        /// Спочатку чекає, поки аніматор увійде у потрібний стан і завершить перехід,
+        /// потім — поки <c>normalizedTime</c> досягне 1.
+        /// </summary>
+        /// <param name="expectedState">Очікуваний стан аніматора.</param>
+        /// <param name="ct">Токен скасування.</param>
+        public async UniTask WaitForStateComplete(EnemyState expectedState, CancellationToken ct = default)
+        {
+            if (animator == null) return;
 
             await UniTask.WaitUntil(
-                () => _animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f,
+                () => !animator.IsInTransition(0) && animator.GetCurrentAnimatorStateInfo(0).IsName(expectedState.ToString()),
+                cancellationToken: ct);
+
+            await UniTask.WaitUntil(
+                () => !animator.IsInTransition(0) && animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f,
                 cancellationToken: ct);
         }
     }

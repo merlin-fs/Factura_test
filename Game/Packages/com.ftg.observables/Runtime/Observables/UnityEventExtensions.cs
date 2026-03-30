@@ -10,7 +10,7 @@ namespace FTg.Common.Observables
             return new UnityEventObservable<T>(unityEvent);
         }
 
-        public static IObservable<Unit> FromUnityEvent(this UnityEvent unityEvent)
+        public static IObservable<ObsUnit> FromUnityEvent(this UnityEvent unityEvent)
         {
             //Action aas;
             //aas.Invoke();
@@ -18,7 +18,7 @@ namespace FTg.Common.Observables
         }
 
         #region UnityEventObservable
-        private class UnityEventObservable : IObservable<Unit>
+        private class UnityEventObservable : IObservable<ObsUnit>
         {
             private readonly UnityEvent _unityEvent;
 
@@ -27,9 +27,9 @@ namespace FTg.Common.Observables
                 _unityEvent = unityEvent;
             }
 
-            public IDisposable Subscribe(IObserver<Unit> observer)
+            public IDisposable Subscribe(IObserver<ObsUnit> observer)
             {
-                void Handler() => observer.OnNext(Unit.Default);
+                void Handler() => observer.OnNext(ObsUnit.Default);
 
                 _unityEvent.AddListener(Handler);
 

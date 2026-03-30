@@ -6,6 +6,10 @@ using Game.Core.Units;
 
 namespace Game.Core.Services
 {
+    /// <summary>
+    /// Керує потоком гри за допомогою FSM: очікування, гра, перемога, поразка.
+    /// Тікається <c>GameSessionRunner</c> щокадру.
+    /// </summary>
     public sealed class GameFlowService
     {
         private readonly GameSession        _session;
@@ -16,6 +20,12 @@ namespace Game.Core.Services
 
         private readonly StateMachine<GameFlowService, GameState> _fsm;
 
+        /// <summary>
+        /// Створює сервіс і запускає FSM у стані <see cref="GameState.WaitingToStart"/>.
+        /// </summary>
+        /// <param name="levelLength">Довжина рівня вздовж осі Z.</param>
+        /// <param name="session">Поточна ігрова сесія.</param>
+        /// <param name="coordinator">Координатор сесій для перезапуску.</param>
         public GameFlowService(float levelLength, GameSession session, SessionCoordinator coordinator)
         {
             _levelLength = levelLength;
@@ -31,25 +41,39 @@ namespace Game.Core.Services
             _fsm.Start(GameState.WaitingToStart);
         }
 
+        /// <summary>
+        /// Реєструє торкання екрана для переходу зі стану очікування або перезапуску.
+        /// </summary>
         public void RegisterTap() => _tapRequested = true;
 
+        /// <summary>
+        /// Тікає FSM і скидає ознаку торкання.
+        /// </summary>
+        /// <param name="dt">Дельта-час у секундах.</param>
         public void Tick(float dt)
         {
             _fsm.Tick(dt);
             _tapRequested = false;
         }
 
-        // ------------------------------------------------------------------ states
-
         private sealed class WaitingToStartState : IState<GameFlowService, GameState>
         {
             public GameState Id => GameState.WaitingToStart;
-            public Task Enter(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
+
+            public Task Enter(GameFlowService ctx, CancellationToken ct)
+            {
+                ctx._session.Pause();
+                return Task.CompletedTask;
+            }
+
             public Task Exit(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
 
             public bool Tick(GameFlowService ctx, float dt, out GameState next)
             {
-                if (!ctx._tapRequested) { next = GameState.WaitingToStart; return false; }
+                if (!ctx._tapRequested)
+                {
+                    next = GameState.WaitingToStart; return false;
+                }
                 next = GameState.Playing;
                 return true;
             }

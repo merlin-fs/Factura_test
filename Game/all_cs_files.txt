@@ -1,0 +1,4181 @@
+﻿=== E:\Sources\Test\Game\Assets\_src\Client\IsExternalInit.cs ===
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit {}
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Common\GameplaySceneRefs.cs ===
+using Game.Client.Config;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace Game.Client.Common
+{
+    public sealed class GameplaySceneRefs : MonoBehaviour
+    {
+        [Header("World")]
+        [SerializeField] private Transform unitsRoot;
+        
+        [Header("Car")]
+        public PlayerConfig PlayerConfig;
+        [SerializeField] private Transform carTransform;
+        [SerializeField] private Transform turretTransform;
+        [SerializeField] private float carSpeed = 8f;
+        [SerializeField] private int carMaxHp = 100;
+
+        [Header("Turret")]
+        [SerializeField] private InputActionReference horizontalDragAction;
+        [SerializeField] private InputActionReference fireAction;
+
+        [Header("Projectile")]
+        [SerializeField] private ProjectileConfig projectileConfig;
+
+        [Header("Ground")]
+        [Tooltip("РљРѕСЂРЅРµРІРѕР№ РѕР±СЉРµРєС‚ РїРѕРґ РєРѕС‚РѕСЂС‹Рј СЃРѕР·РґР°СЋС‚СЃСЏ СЃРµРіРјРµРЅС‚С‹ Р·РµРјР»Рё. X/Y РѕРїСЂРµРґРµР»СЏСЋС‚ РІС‹СЂР°РІРЅРёРІР°РЅРёРµ РїРѕР»РѕСЃС‹.")]
+        [SerializeField] private Transform groundRoot;
+        [SerializeField] private GroundLooperConfig groundLooperConfig;
+
+        [Header("Level")]
+        [SerializeField] private LevelConfig levelConfig;
+
+        [Header("Camera")]
+        [SerializeField] private Transform cameraTransform;
+        [SerializeField] private Vector3 cameraOffset = new(0f, 4f, -8f);
+        [SerializeField] private Vector3 cameraAngle  = new(26f, 0f, 0f);
+        [SerializeField] private float cameraFollowLerp = 10f;
+        [Tooltip("РЎРјРµС‰РµРЅРёРµ РїРѕР·РёС†РёРё РєР°РјРµСЂС‹ РІРїРµСЂС‘Рґ/РЅР°Р·Р°Рґ РІРґРѕР»СЊ РґРѕСЂРѕРіРё.\n> 0 вЂ” РєР°РјРµСЂР° РІРїРµСЂС‘Рґ в†’ РјР°С€РёРЅР° РЅРёР¶Рµ РїРѕ СЌРєСЂР°РЅСѓ\n< 0 вЂ” РєР°РјРµСЂР° РЅР°Р·Р°Рґ в†’ РјР°С€РёРЅР° РІС‹С€Рµ РїРѕ СЌРєСЂР°РЅСѓ")]
+        [SerializeField] private float cameraLookOffsetForward = 5f;
+        [Tooltip("РЎРєРѕСЂРѕСЃС‚СЊ Р»РµСЂРїР° РІРґРѕР»СЊ РґРѕСЂРѕРіРё (РјРµРЅСЊС€Рµ = Р±РѕР»СЊС€Рµ РёРЅРµСЂС†РёРё РІРїРµСЂС‘Рґ/РЅР°Р·Р°Рґ).")]
+        [SerializeField, Min(0.1f)] private float cameraLookLerp = 5f;
+        [Tooltip("РђРјРїР»РёС‚СѓРґР° СЃР»СѓС‡Р°Р№РЅРѕРіРѕ РїРѕРєР°С‡РёРІР°РЅРёСЏ РєР°РјРµСЂС‹ РІРѕ РІСЂРµРјСЏ РґРІРёР¶РµРЅРёСЏ (world units).")]
+        [SerializeField, Min(0f)] private float cameraSwayAmplitude = 0.06f;
+        [Tooltip("РЎРєРѕСЂРѕСЃС‚СЊ СЃРјРµРЅС‹ РїРѕРєР°С‡РёРІР°РЅРёСЏ (Р·Р°РІРёСЃРёС‚ РѕС‚ РїСЂРѕР№РґРµРЅРЅРѕРіРѕ СЂР°СЃСЃС‚РѕСЏРЅРёСЏ).")]
+        [SerializeField, Min(0f)] private float cameraSwaySpeed = 0.4f;
+
+        [Header("UI")] 
+        public GameObject BeginGamePanel;
+        public GameObject WinPanel;
+        public GameObject LosePanel;
+        public GameObject HudGame;
+
+        public Transform           GroundRoot           => groundRoot;
+        public GroundLooperConfig  GroundLooperConfig   => groundLooperConfig;
+
+        public Transform           UnitsRoot => unitsRoot;
+        
+        public Transform CarTransform    => carTransform;
+        public Transform TurretTransform => turretTransform;
+
+        public InputActionReference HorizontalDragAction => horizontalDragAction;
+        public InputActionReference FireAction => fireAction;
+        public LevelConfig LevelConfig => levelConfig;
+
+        public Transform CameraTransform => cameraTransform;
+        public Vector3   CameraOffset    => cameraOffset;
+        public Quaternion CameraRotation => Quaternion.Euler(cameraAngle);
+        public float CameraFollowLerp    => cameraFollowLerp;
+        public float CameraLookOffsetForward => cameraLookOffsetForward;
+        public float CameraLookLerp => cameraLookLerp;
+        public float CameraSwayAmplitude => cameraSwayAmplitude;
+        public float CameraSwaySpeed => cameraSwaySpeed;
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Common\PooledVfx.cs ===
+using System;
+using System.Linq;
+using UnityEngine;
+
+namespace Game.Client.Vfx
+{
+    public sealed class PooledVfx : MonoBehaviour
+    {
+        [SerializeField] private ParticleSystem[] particleSystems;
+
+        private Action<PooledVfx> _onCompleted;
+        private bool _isPlaying;
+
+        public string VfxId => gameObject.name;
+
+        public void Play(Vector3 position, Quaternion rotation, Action<PooledVfx> onCompleted)
+        {
+            _onCompleted = onCompleted;
+
+            transform.SetPositionAndRotation(position, rotation);
+
+            ResetSystems();
+            gameObject.SetActive(true);
+
+            for (int i = 0; i < particleSystems.Length; i++)
+                particleSystems[i].Play(true);
+
+            _isPlaying = true;
+        }
+
+        public void StopAndReturn()
+        {
+            if (!_isPlaying)
+                return;
+
+            _isPlaying = false;
+
+            ResetSystems();
+            gameObject.SetActive(false);
+
+            _onCompleted?.Invoke(this);
+            _onCompleted = null;
+        }
+
+        private void Update()
+        {
+            if (!_isPlaying)
+                return;
+
+            if (particleSystems.Any(t => t != null && t.IsAlive(true)))
+            {
+                return;
+            }
+
+            StopAndReturn();
+        }
+
+        private void ResetSystems()
+        {
+            foreach (var t in particleSystems)
+            {
+                if (t == null)
+                    continue;
+
+                t.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (particleSystems == null || particleSystems.Length == 0)
+                particleSystems = GetComponentsInChildren<ParticleSystem>(true);
+        }
+#endif
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Common\VfxManager.cs ===
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Game.Client.Vfx
+{
+    public sealed class VfxManager : MonoBehaviour
+    {
+        [SerializeField] private Transform _poolRoot;
+        [SerializeField] private List<VfxRegistryEntry> _entries = new();
+
+        private readonly Dictionary<string, VfxPool> _pools = new(StringComparer.Ordinal);
+
+        private void Awake()
+        {
+            if (_poolRoot == null)
+                _poolRoot = transform;
+
+            BuildPools();
+        }
+
+        public void Play(string id, Vector3 position, Quaternion rotation)
+        {
+            if (!_pools.TryGetValue(id, out var pool))
+            {
+                Debug.LogWarning($"VFX with id '{id}' is not registered.");
+                return;
+            }
+
+            var instance = pool.Get();
+            instance.Play(position, rotation, pool.Release);
+        }
+
+        private void BuildPools()
+        {
+            _pools.Clear();
+
+            for (var i = 0; i < _entries.Count; i++)
+            {
+                var entry = _entries[i];
+                if (entry == null || entry.Prefab == null)
+                    continue;
+
+                var id = entry.Id;
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    Debug.LogWarning($"VFX entry at index {i} has empty id.");
+                    continue;
+                }
+
+                if (_pools.ContainsKey(id))
+                {
+                    Debug.LogWarning($"VFX id '{id}' is already registered.");
+                    continue;
+                }
+
+                var poolParent = new GameObject($"{id}_Pool").transform;
+                poolParent.SetParent(_poolRoot, false);
+
+                var pool = new VfxPool(entry.Prefab, poolParent);
+                _pools.Add(id, pool);
+
+                for (var j = 0; j < entry.PrewarmCount; j++)
+                    pool.Prewarm();
+            }
+        }
+
+        private sealed class VfxPool
+        {
+            private readonly PooledVfx _prefab;
+            private readonly Transform _parent;
+            private readonly Stack<PooledVfx> _items = new();
+
+            public VfxPool(PooledVfx prefab, Transform parent)
+            {
+                _prefab = prefab;
+                _parent = parent;
+            }
+
+            public void Prewarm()
+            {
+                var instance = Create();
+                Release(instance);
+            }
+
+            public PooledVfx Get()
+            {
+                return _items.Count > 0 
+                    ? _items.Pop() 
+                    : Create();
+            }
+
+            public void Release(PooledVfx instance)
+            {
+                if (instance == null)
+                    return;
+
+                instance.transform.SetParent(_parent, false);
+                _items.Push(instance);
+            }
+
+            private PooledVfx Create()
+            {
+                var instance = UnityEngine.Object.Instantiate(_prefab, _parent);
+                instance.gameObject.SetActive(false);
+                return instance;
+            }
+        }
+
+        [Serializable]
+        public sealed class VfxRegistryEntry
+        {
+            [SerializeField] private string _id;
+            [SerializeField] private PooledVfx _prefab;
+            [SerializeField] private int _prewarmCount = 0;
+
+            public string Id => string.IsNullOrWhiteSpace(_id) && _prefab != null
+                ? _prefab.name
+                : _id;
+
+            public PooledVfx Prefab => _prefab;
+            public int PrewarmCount => _prewarmCount;
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Configs\EnemyConfig.cs ===
+using Game.Client.Views;
+using Game.Core.Units;
+using UnityEngine;
+
+namespace Game.Client.Config
+{
+    [CreateAssetMenu(fileName = "EnemyConfig", menuName = "Game/Configs/Enemy Config")]
+    public sealed class EnemyConfig : UnitConfig
+    {
+        [field: SerializeField]
+        public EnemyView Prefab { get; private set; }
+
+        [field: SerializeField, Min(0f)]
+        public float MoveSpeed { get; private set; } = 4f;
+
+        [field: SerializeField, Min(0f)]
+        public float AggroRadius { get; private set; } = 15f;
+
+        [field: SerializeField, Min(0f)]
+        public float AttackInterval { get; private set; } = 1f;
+
+        [field: SerializeField, Min(0f)]
+        public float HitRadius { get; private set; } = 0.5f;
+
+        [Header("Wander (Zombie Idle)")]
+        [field: SerializeField, Min(0f)]
+        public float WanderSpeed { get; private set; } = 1.2f;
+
+        [field: SerializeField, Min(0f)]
+        public float WanderMinDuration { get; private set; } = 2f;
+
+        [field: SerializeField, Min(0f)]
+        public float WanderMaxDuration { get; private set; } = 5f;
+
+        [field: SerializeField, Min(0f)]
+        public float WanderIdleMinDuration { get; private set; } = 1f;
+
+        [field: SerializeField, Min(0f)]
+        public float WanderIdleMaxDuration { get; private set; } = 3f;
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Configs\GroundLooperConfig.cs ===
+using UnityEngine;
+
+namespace Game.Client.Config
+{
+    [CreateAssetMenu(fileName = "GroundLooperConfig", menuName = "Game/Configs/Ground Looper Config")]
+    public sealed class GroundLooperConfig : ScriptableObject
+    {
+        [Tooltip("РџСЂРµС„Р°Р± РѕРґРЅРѕРіРѕ СЃРµРіРјРµРЅС‚Р° Р·РµРјР»Рё.")]
+        [field: SerializeField]
+        public GameObject SegmentPrefab { get; private set; }
+
+        [Tooltip("Р”Р»РёРЅР° РѕРґРЅРѕРіРѕ СЃРµРіРјРµРЅС‚Р° РїРѕ РѕСЃРё Z.")]
+        [field: SerializeField, Min(0.1f)]
+        public float SegmentLength { get; private set; } = 20f;
+
+        [Tooltip("РЎРєРѕР»СЊРєРѕ СЃРµРіРјРµРЅС‚РѕРІ РґРµСЂР¶Р°С‚СЊ РІРїРµСЂРµРґРё РјР°С€РёРЅС‹.")]
+        [field: SerializeField, Min(1)]
+        public int SegmentsAhead { get; private set; } = 5;
+
+        [Tooltip("РЎРєРѕР»СЊРєРѕ СЃРµРіРјРµРЅС‚РѕРІ РґРµСЂР¶Р°С‚СЊ РїРѕР·Р°РґРё РјР°С€РёРЅС‹.")]
+        [field: SerializeField, Min(0)]
+        public int SegmentsBehind { get; private set; } = 2;
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Configs\LevelConfig.cs ===
+using UnityEngine;
+
+namespace Game.Client.Config
+{
+    [CreateAssetMenu(fileName = "LevelConfig", menuName = "Game/Configs/Level Config")]
+    public sealed class LevelConfig : ScriptableObject
+    {
+        [field: SerializeField, Min(1f)]
+        public float LevelLength { get; private set; } = 200f;
+        [field: SerializeField]
+        public RoadSpawnConfig RoadSpawn { get; private set; }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Configs\PlayerConfig.cs ===
+using Game.Client.Views;
+using Game.Core.Units;
+using UnityEngine;
+
+namespace Game.Client.Config
+{
+    [CreateAssetMenu(fileName = "PlayerConfig", menuName = "Game/Configs/Player Config")]
+    public sealed class PlayerConfig : UnitConfig
+    {
+        [field: SerializeField]
+        public CarView Prefab { get; private set; }
+
+        [field: SerializeField, Min(0f)]
+        public float MoveSpeed { get; private set; } = 4f;
+
+        [field: SerializeField]
+        public TurretConfig TurretConfig { get; private set; }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Configs\ProjectileConfig.cs ===
+using Game.Client.Views;
+using UnityEngine;
+
+namespace Game.Client.Config
+{
+    [CreateAssetMenu(fileName = "ProjectileConfig", menuName = "Game/Configs/Projectile Config")]
+    public sealed class ProjectileConfig : ScriptableObject
+    {
+        [field: SerializeField]
+        public ProjectileView Prefab { get; private set; }
+
+        [field: SerializeField, Min(0f)]
+        public float Speed { get; private set; } = 12f;
+
+        [field: SerializeField, Min(0f)]
+        public float HitRadius { get; private set; } = 0.15f;
+
+        [field: SerializeField, Min(0f)]
+        public float Lifetime { get; private set; } = 2f;
+
+        [field: SerializeField, Min(1)]
+        public int Damage { get; private set; } = 10;
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Configs\RoadSpawnConfig.cs ===
+using System;
+using UnityEngine;
+
+namespace Game.Client.Config
+{
+    [CreateAssetMenu(fileName = "RoadSpawnConfig", menuName = "Game/Configs/Road Spawn Config")]
+    public sealed class RoadSpawnConfig : ScriptableObject
+    {
+        [field: SerializeField, Min(0f)]
+        public float InitialSpawnDistance { get; private set; } = 8f;
+
+        [field: SerializeField, Min(1f)]
+        public float MinSpawnAheadDistance { get; private set; } = 18f;
+
+        [field: SerializeField, Min(1f)]
+        public float MaxSpawnAheadDistance { get; private set; } = 28f;
+
+        [field: SerializeField, Min(1f)]
+        public float MinDistanceBetweenGroups { get; private set; } = 10f;
+
+        [field: SerializeField, Min(1f)]
+        public float MaxDistanceBetweenGroups { get; private set; } = 18f;
+
+        [field: SerializeField, Min(1)]
+        public int MaxAliveEnemies { get; private set; } = 15;
+
+        [field: SerializeField]
+        public float SpawnY { get; private set; } = 0f;
+
+        [field: SerializeField]
+        public float[] LaneOffsetsX { get; private set; } = new[] { -3.5f, 0f, 3.5f };
+
+        [SerializeField] private RoadSpawnPatternData[] patterns = Array.Empty<RoadSpawnPatternData>();
+
+        public RoadSpawnPatternData[] Patterns => patterns ?? Array.Empty<RoadSpawnPatternData>();
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Configs\RoadSpawnEntryData.cs ===
+using System;
+using UnityEngine;
+
+namespace Game.Client.Config
+{
+    [Serializable]
+    public struct RoadSpawnEntryData
+    {
+        [SerializeField] private EnemyConfig enemyConfig;
+
+        [SerializeField] private bool useRandomLane;
+        [SerializeField, Min(0)] private int laneIndex;
+
+        [SerializeField] private float lateralOffset;
+        [SerializeField, Min(0f)] private float lateralJitter;
+
+        [SerializeField] private float forwardOffset;
+        [SerializeField, Min(0f)] private float forwardJitter;
+
+        public EnemyConfig EnemyConfig => enemyConfig;
+        public bool UseRandomLane => useRandomLane;
+        public int LaneIndex => laneIndex;
+
+        public float LateralOffset => lateralOffset;
+        public float LateralJitter => lateralJitter;
+
+        public float ForwardOffset => forwardOffset;
+        public float ForwardJitter => forwardJitter;
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Configs\RoadSpawnPatternData.cs ===
+using System;
+using UnityEngine;
+
+namespace Game.Client.Config
+{
+    [Serializable]
+    public sealed class RoadSpawnPatternData
+    {
+        [SerializeField, Min(1)] private int weight = 1;
+        [SerializeField] private RoadSpawnEntryData[] entries = Array.Empty<RoadSpawnEntryData>();
+
+        public int Weight => weight;
+        public RoadSpawnEntryData[] Entries => entries ?? Array.Empty<RoadSpawnEntryData>();
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Configs\TurretConfig.cs ===
+using UnityEngine;
+
+namespace Game.Client.Config
+{
+    [CreateAssetMenu(fileName = "TurretConfig", menuName = "Game/Configs/Turret Config")]
+    public sealed class TurretConfig : ScriptableObject
+    {
+        [field: SerializeField]
+        public float RotateSpeed { get; private set; } = 0.3f;
+
+        [field: SerializeField, Min(0f)]
+        public float RotationLimit { get; private set; } = 60f;
+
+        [field: SerializeField, Min(0f)]
+        public float FireCooldown { get; private set; } = 0.5f;
+
+        [field: SerializeField, Min(1f)]
+        public float AimRange { get; private set; } = 80f;
+
+        [field: SerializeField, Min(0.05f)]
+        public float AimRadius { get; private set; } = 0.6f;
+
+        [field: SerializeField]
+        [field: Tooltip("true вЂ” Р»Р°Р·РµСЂ С– СЃРЅР°СЂСЏРґ Р·Р°Р»РёРїР°СЋС‚СЊ РЅР° С†РµРЅС‚СЂС– РІРѕСЂРѕРіР°; false вЂ” Р»Р°Р·РµСЂ РїСЂСЏРјРёР№, СЃРЅР°СЂСЏРґ Y-СЃРєРѕСЂРёРіРѕРІР°РЅРёР№")]
+        public bool LockOnTarget { get; private set; } = false;
+
+        [field: SerializeField]
+        [field: Tooltip("Y-РєРѕРѕСЂРґРёРЅР°С‚Р° С‚РѕС‡РєРё РїСЂРёС†РµР»Р° РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё С†РµР»Рё (РјРёСЂРѕРІРѕРµ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ)")]
+        public float FallbackAimY { get; private set; } = 0.5f;
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\DI\GameplayInstaller.cs ===
+using Game.Core.Session;
+using Game.Client.Common;
+using Game.Client.Input;
+using Game.Client.Session;
+using Game.Client.UI;
+using Game.Client.Vfx;
+using VContainer;
+using VContainer.Unity;
+using UnityEngine;
+
+namespace Game.Client.DI
+{
+    /// <summary>
+    /// Root-level (scene-wide) bindings only:
+    /// scene references, input wrappers, session infrastructure.
+    /// Everything gameplay-session-scoped lives in GameSessionBuilder.
+    /// </summary>
+    public sealed class GameplayInstaller : MonoBehaviour, IInstaller
+    {
+        [SerializeField] private GameplaySceneRefs sceneRefs;
+        [SerializeField] private VfxManager vfxManager;
+
+        public void Install(IContainerBuilder builder)
+        {
+            builder.RegisterInstance(sceneRefs);
+            builder.RegisterInstance(vfxManager);
+
+            // Input wrappers вЂ” РѕРґРЅР° РїР°СЂР° РЅР° РІСЃС‘ РІСЂРµРјСЏ Р¶РёР·РЅРё СЃС†РµРЅС‹
+            builder.Register<IHorizontalDragInput>(
+                _ => new HorizontalDragInput(sceneRefs.HorizontalDragAction),
+                Lifetime.Singleton);
+            builder.Register<IFireInput>(
+                _ => new FireInput(sceneRefs.FireAction),
+                Lifetime.Singleton);
+
+            // Session infrastructure
+            builder.Register<SessionCoordinator>(Lifetime.Singleton);
+            builder.Register<ISessionBuilder, GameSessionBuilder>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<UiSystem>()
+                .WithParameter("hudGame", sceneRefs.HudGame)
+                .WithParameter("beginGamePanel", sceneRefs.BeginGamePanel)
+                .WithParameter("winPanel", sceneRefs.WinPanel)
+                .WithParameter("losePanel", sceneRefs.LosePanel);
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\DI\GameplayLifetimeScope.cs ===
+using UnityEngine;
+using VContainer;
+using VContainer.Unity;
+
+namespace Game.Client.DI
+{
+    /// <summary>
+    /// РљРѕСЂРЅРµРІРѕР№ РєРѕРЅС‚РµР№РЅРµСЂ СЃС†РµРЅС‹ Gameplay.
+    /// Р”РѕР±Р°РІСЊС‚Рµ СЌС‚РѕС‚ РєРѕРјРїРѕРЅРµРЅС‚ РЅР° GameObject РІ СЃС†РµРЅРµ РІРјРµСЃС‚Рѕ Р±Р°Р·РѕРІРѕРіРѕ LifetimeScope.
+    /// РќР°Р·РЅР°С‡СЊС‚Рµ СЃСЃС‹Р»РєСѓ РЅР° GameplayInstaller (MonoBehaviour РЅР° С‚РѕР№ Р¶Рµ РёР»Рё РґСЂСѓРіРѕР№ GameObject).
+    /// Р’ РїРѕР»Рµ AutoInjectGameObjects РґРѕР±Р°РІСЊС‚Рµ SessionEntryPoint, С‡С‚РѕР±С‹ РѕРЅ РїРѕР»СѓС‡РёР» РёРЅР¶РµРєС†РёСЋ.
+    /// </summary>
+    public sealed class GameplayLifetimeScope : LifetimeScope
+    {
+        [SerializeField] private GameplayInstaller installer;
+
+        protected override void Configure(IContainerBuilder builder)
+        {
+            installer.Install(builder);
+        }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\DI\ObjectResolverExtensions.cs ===
+using UnityEngine;
+using VContainer;
+using VContainer.Unity;
+
+namespace Game.Client.DI
+{
+    /// <summary>
+    /// Extensions for IObjectResolver that bypass ApplicationOrigin в†’ parent LifetimeScope routing.
+    /// Use these when instantiating prefabs inside a child scope created via CreateScope(),
+    /// so injection always runs through the current (child) resolver.
+    /// </summary>
+    public static class ObjectResolverExtensions
+    {
+        /// <summary>
+        /// Instantiates <paramref name="prefab"/> and injects dependencies via this resolver.
+        /// Safe to use in scopes created with CreateScope() (no LifetimeScope MonoBehaviour needed).
+        /// </summary>
+        public static T ScopedInstantiate<T>(this IObjectResolver resolver, T prefab)
+            where T : MonoBehaviour
+        {
+            var instance = Object.Instantiate(prefab);
+            resolver.InjectGameObject(instance.gameObject);
+            return instance;
+        }
+
+        /// <summary>
+        /// Instantiates <paramref name="prefab"/> under <paramref name="parent"/> and injects dependencies via this resolver.
+        /// </summary>
+        public static T ScopedInstantiate<T>(this IObjectResolver resolver, T prefab, Transform parent)
+            where T : MonoBehaviour
+        {
+            var instance = Object.Instantiate(prefab, parent);
+            resolver.InjectGameObject(instance.gameObject);
+            return instance;
+        }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Input\IFireInput.cs ===
+namespace Game.Client.Input
+{
+    public interface IFireInput
+    {
+        bool IsPressed();
+        bool WasPressedThisFrame();
+        bool WasReleasedThisFrame();
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Input\IHorizontalDragInput.cs ===
+namespace Game.Client.Input
+{
+    public interface IHorizontalDragInput
+    {
+        float ReadDeltaX();
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Input\Specifics\FireInput.cs ===
+using System;
+using UnityEngine.InputSystem;
+
+namespace Game.Client.Input
+{
+    public sealed class FireInput : IFireInput, IDisposable
+    {
+        private readonly InputAction _action;
+
+        public FireInput(InputActionReference actionReference)
+        {
+            if (actionReference == null)
+                throw new ArgumentNullException(nameof(actionReference));
+
+            _action = actionReference.action
+                      ?? throw new InvalidOperationException("InputActionReference.action is null");
+
+            _action.Enable();
+        }
+
+        public bool IsPressed()
+        {
+            return _action.IsPressed();
+        }
+
+        public bool WasPressedThisFrame()
+        {
+            return _action.WasPressedThisFrame();
+        }
+
+        public bool WasReleasedThisFrame()
+        {
+            return _action.WasReleasedThisFrame();
+        }
+
+        public void Dispose()
+        {
+            _action.Disable();
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Input\Specifics\HorizontalDragInput.cs ===
+using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace Game.Client.Input
+{
+    public sealed class HorizontalDragInput : IHorizontalDragInput, IDisposable
+    {
+        private readonly InputAction _action;
+
+        public HorizontalDragInput(InputActionReference actionReference)
+        {
+            if (actionReference == null)
+                throw new ArgumentNullException(nameof(actionReference));
+
+            _action = actionReference.action
+                      ?? throw new InvalidOperationException("InputActionReference.action is null");
+
+            _action.Enable();
+        }
+
+        public float ReadDeltaX()
+        {
+            Vector2 delta = _action.ReadValue<Vector2>();
+            return delta.x;
+        }
+
+        public void Dispose()
+        {
+            _action.Disable();
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Services\CameraFollowService.cs ===
+using Game.Client.Common;
+using UnityEngine;
+
+namespace Game.Client.Services
+{
+    /// <summary>
+    /// РџР»Р°РІРЅРѕ СЃР»РµРґСѓРµС‚ РєР°РјРµСЂРѕР№ Р·Р° РјР°С€РёРЅРѕР№. РўРёРєР°РµС‚СЃСЏ GameSessionRunner.
+    /// </summary>
+    public sealed class CameraFollowService
+    {
+        private readonly GameplaySceneRefs _refs;
+
+        private Vector3    _smoothedPos;
+        private Vector3    _lastCarPos;
+        private float      _noiseOffset;
+        private bool       _initialized;
+
+        public CameraFollowService(GameplaySceneRefs refs)
+        {
+            _refs = refs;
+        }
+
+        public void Tick(float deltaTime)
+        {
+            if (_refs.CameraTransform == null || _refs.CarTransform == null)
+                return;
+
+            Vector3 carPos    = _refs.CarTransform.position;
+            Vector3 desiredPos = carPos
+                                 + _refs.CameraOffset
+                                 + _refs.CarTransform.forward * _refs.CameraLookOffsetForward;
+
+            if (!_initialized)
+            {
+                _smoothedPos = desiredPos;
+                _lastCarPos  = carPos;
+                _initialized = true;
+            }
+
+            // РџРѕРїРµСЂС‘Рє РґРѕСЂРѕРіРё (X, Y) вЂ” Р±С‹СЃС‚СЂС‹Р№ Р»РµСЂРї.
+            // Р’РґРѕР»СЊ РґРѕСЂРѕРіРё (forward) вЂ” РјРµРґР»РµРЅРЅС‹Р№ Р»РµСЂРї, СЃРѕР·РґР°С‘С‚ Р»С‘РіРєСѓСЋ РёРЅРµСЂС†РёСЋ.
+            Vector3 diff     = desiredPos - _smoothedPos;
+            Vector3 fwd      = _refs.CarTransform.forward;
+            Vector3 diffFwd  = Vector3.Project(diff, fwd);
+            Vector3 diffPerp = diff - diffFwd;
+
+            _smoothedPos += diffPerp * Mathf.Clamp01(deltaTime * _refs.CameraFollowLerp)
+                          + diffFwd  * Mathf.Clamp01(deltaTime * _refs.CameraLookLerp);
+
+            // --- Sway: РїРѕРєР°С‡РёРІР°РЅРёРµ С‡РµСЂРµР· Perlin noise, РїСЂРѕРїРѕСЂС†РёРѕРЅР°Р»СЊРЅРѕ РїСЂРѕР№РґРµРЅРЅРѕРјСѓ РїСѓС‚Рё ---
+            float distanceTraveled = (carPos - _lastCarPos).magnitude;
+            _lastCarPos  = carPos;
+            _noiseOffset += distanceTraveled * _refs.CameraSwaySpeed;
+
+            float amp   = _refs.CameraSwayAmplitude;
+            // Sampling СЃ СЂР°Р·РЅС‹РјРё seed-РѕС„СЃРµС‚Р°РјРё С‡С‚РѕР±С‹ X Рё Y РЅРµ РєРѕСЂСЂРµР»РёСЂРѕРІР°Р»Рё
+            float swayX = (Mathf.PerlinNoise(_noiseOffset,         17.3f) - 0.5f) * 2f * amp;
+            float swayY = (Mathf.PerlinNoise(43.1f, _noiseOffset)         - 0.5f) * 2f * amp;
+
+            // Sway РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ РєР°РјРµСЂС‹ (right / up)
+            Quaternion camRot = _refs.CameraRotation;
+            Vector3 right    = camRot * Vector3.right;
+            Vector3 up       = camRot * Vector3.up;
+            Vector3 finalPos = _smoothedPos + right * swayX + up * swayY;
+
+            // РЈРіРѕР» РЅРµ РјРµРЅСЏРµС‚СЃСЏ вЂ” SetPositionAndRotation РІРјРµСЃС‚Рѕ LookAt.
+            _refs.CameraTransform.SetPositionAndRotation(finalPos, camRot);
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Services\GroundLooperService.cs ===
+using System.Collections.Generic;
+using Game.Client.Common;
+using Game.Client.Config;
+using Game.Core.Session;
+using UnityEngine;
+
+namespace Game.Client.Services
+{
+    /// <summary>
+    /// Р‘РµСЃРєРѕРЅРµС‡РЅС‹Р№ С‚Р°Р№Р»РёРЅРі СЃРµРіРјРµРЅС‚РѕРІ Р·РµРјР»Рё РІРґРѕР»СЊ РѕСЃРё Z.
+    ///
+    /// РџСЂРёРЅС†РёРї СЂР°Р±РѕС‚С‹:
+    ///   РџСЂРё РїРµСЂРІРѕРј Tick СЃРѕР·РґР°С‘С‚СЃСЏ РїСѓР» РёР· (SegmentsAhead + SegmentsBehind + 1) СЃРµРіРјРµРЅС‚РѕРІ.
+    ///   РљР°Р¶РґС‹Р№ Tick: СЃРµРіРјРµРЅС‚С‹, СѓС€РµРґС€РёРµ Р·Р° С…РІРѕСЃС‚РѕРІСѓСЋ Р·РѕРЅСѓ, РїРµСЂРµСЃС‚Р°РІР»СЏСЋС‚СЃСЏ РІРїРµСЂС‘Рґ (recycling).
+    ///
+    /// Р”Р°РЅРЅС‹Рµ Рѕ РјР°С€РёРЅРµ Р±РµСЂСѓС‚СЃСЏ РёР· GameSession.Player.Position.
+    /// РџР°СЂР°РјРµС‚СЂС‹ Рё РїСЂРµС„Р°Р± Р·Р°РґР°СЋС‚СЃСЏ С‡РµСЂРµР· GroundLooperConfig.
+    /// РЎРµРіРјРµРЅС‚С‹ СЃРѕР·РґР°СЋС‚СЃСЏ РїРѕРґ GroundRoot РёР· GameplaySceneRefs.
+    /// </summary>
+    public sealed class GroundLooperService
+    {
+        private readonly GroundLooperConfig _config;
+        private readonly GameplaySceneRefs  _refs;
+        private readonly GameSession        _session;
+
+        private readonly Queue<Transform> _pool = new();
+        private float _nextSpawnZ;
+        private bool  _initialized;
+
+        // в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+
+        public GroundLooperService(GroundLooperConfig config, GameplaySceneRefs refs, GameSession session)
+        {
+            _config  = config;
+            _refs    = refs;
+            _session = session;
+        }
+
+        // в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+
+        public void Tick(float deltaTime)
+        {
+            if (_config.SegmentPrefab == null) return;
+            if (_session.Player       == null) return;
+
+            // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ вЂ” РїРµСЂРІС‹Р№ РєР°РґСЂ, РєРѕРіРґР° Player СѓР¶Рµ СЃРѕР·РґР°РЅ
+            if (!_initialized)
+            {
+                Initialize();
+                return;
+            }
+
+            if (_session.IsPaused) return;
+
+            float carZ = _session.Player.Position.z;
+
+            // РџРµСЂРµСЃС‚Р°РІР»СЏРµРј СЃРµРіРјРµРЅС‚С‹, РІС‹С€РµРґС€РёРµ Р·Р° С…РІРѕСЃС‚РѕРІСѓСЋ Р·РѕРЅСѓ, РІРїРµСЂС‘Рґ
+            while (_pool.Count > 0)
+            {
+                Transform back = _pool.Peek();
+
+                // Р—Р°РґРЅРёР№ РєРѕРЅРµС† СЃРµРіРјРµРЅС‚Р° РІС‹С€РµР» Р·Р° РїСЂРµРґРµР»С‹ СѓРґРµСЂР¶РёРІР°РµРјРѕР№ Р·РѕРЅС‹ РїРѕР·Р°РґРё?
+                if (back.position.z + _config.SegmentLength < carZ - _config.SegmentsBehind * _config.SegmentLength)
+                {
+                    _pool.Dequeue();
+                    back.position = new Vector3(back.position.x, back.position.y, _nextSpawnZ);
+                    _pool.Enqueue(back);
+                    _nextSpawnZ += _config.SegmentLength;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        // в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+
+        private void Initialize()
+        {
+            _initialized = true;
+
+            Transform root = _refs.GroundRoot;
+            float     x    = root != null ? root.position.x : 0f;
+            float     y    = root != null ? root.position.y : 0f;
+
+            // РџСѓР» СЃС‚Р°СЂС‚СѓРµС‚ С‡СѓС‚СЊ РїРѕР·Р°РґРё РјР°С€РёРЅС‹
+            _nextSpawnZ = _session.Player.Position.z - _config.SegmentsBehind * _config.SegmentLength;
+
+            int total = _config.SegmentsAhead + _config.SegmentsBehind + 1;
+            for (int i = 0; i < total; i++)
+            {
+                var pos = new Vector3(x, y, _nextSpawnZ);
+                var obj = Object.Instantiate(_config.SegmentPrefab, pos, Quaternion.identity, root);
+                _pool.Enqueue(obj.transform);
+                _nextSpawnZ += _config.SegmentLength;
+            }
+        }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Services\RoadSpawnService.cs ===
+using System.Linq;
+using Game.Core.Session;
+using Game.Client.Config;
+using Game.Core.Units;
+using Game.Core.Services;
+using UnityEngine;
+
+namespace Game.Client.Services
+{
+    public sealed class RoadSpawnService
+    {
+        private readonly LevelConfig   _levelConfig;
+        private readonly GameSession   _session;
+        private readonly IEnemyFactory _enemyFactory;
+        private readonly GameStatistics _gameStatistics;
+
+        private float _nextSpawnAtCarZ;
+        private bool  _initialized;
+
+        public RoadSpawnService(
+            LevelConfig   levelConfig,
+            GameSession   session,
+            IEnemyFactory enemyFactory,
+            GameStatistics gameStatistics)
+        {
+            _levelConfig   = levelConfig;
+            _session       = session;
+            _enemyFactory  = enemyFactory;
+            _gameStatistics = gameStatistics;
+        }
+
+        public void Tick(float deltaTime)
+        {
+            if (_session.IsPaused) return;
+
+            var spawnConfig = _levelConfig.RoadSpawn;
+            if (spawnConfig == null) return;
+            if (spawnConfig.Patterns == null || spawnConfig.Patterns.Length == 0) return;
+
+            var carZ = _session.Player.Position.z;
+
+            if (!_initialized)
+            {
+                _initialized     = true;
+                _nextSpawnAtCarZ = _session.StartPositionZ + spawnConfig.InitialSpawnDistance;
+            }
+
+            if (carZ < _nextSpawnAtCarZ) return;
+
+            // LiveCount вЂ” authoritative live-enemy counter (not pool's ActiveCount)
+            if (_gameStatistics.LiveCount >= spawnConfig.MaxAliveEnemies) return;
+
+            var pattern = PickPattern(spawnConfig);
+            if (pattern == null || pattern.Entries.Length == 0)
+            {
+                ScheduleNext(carZ, spawnConfig);
+                return;
+            }
+
+            var finishZ    = _session.StartPositionZ + _levelConfig.LevelLength;
+            var groupBaseZ = Mathf.Min(
+                carZ + Random.Range(spawnConfig.MinSpawnAheadDistance, spawnConfig.MaxSpawnAheadDistance),
+                finishZ);
+
+            SpawnPattern(pattern, groupBaseZ, spawnConfig);
+            ScheduleNext(carZ, spawnConfig);
+        }
+
+        // ------------------------------------------------------------------ helpers
+
+        private void SpawnPattern(RoadSpawnPatternData pattern, float groupBaseZ, RoadSpawnConfig cfg)
+        {
+            var lanes = cfg.LaneOffsetsX;
+            if (lanes == null || lanes.Length == 0) return;
+
+            foreach (RoadSpawnEntryData entry in pattern.Entries)
+            {
+                if (entry.EnemyConfig == null || entry.EnemyConfig.Prefab == null) continue;
+
+                var laneIndex = entry.UseRandomLane
+                    ? Random.Range(0, lanes.Length)
+                    : Mathf.Clamp(entry.LaneIndex, 0, lanes.Length - 1);
+
+                var spawnX = lanes[laneIndex]
+                             + entry.LateralOffset
+                             + Random.Range(-entry.LateralJitter, entry.LateralJitter);
+
+                var spawnZ = groupBaseZ
+                             + entry.ForwardOffset
+                             + Random.Range(-entry.ForwardJitter, entry.ForwardJitter);
+
+                _enemyFactory.Spawn(entry.EnemyConfig,
+                    new Vector3(spawnX, cfg.SpawnY, spawnZ),
+                    Quaternion.identity);
+            }
+        }
+
+        private void ScheduleNext(float carZ, RoadSpawnConfig cfg)
+        {
+            _nextSpawnAtCarZ = carZ + Random.Range(
+                cfg.MinDistanceBetweenGroups,
+                cfg.MaxDistanceBetweenGroups);
+        }
+
+        private static RoadSpawnPatternData PickPattern(RoadSpawnConfig cfg)
+        {
+            var total = cfg.Patterns.Where(p => p is { Weight: > 0 }).Sum(p => p.Weight);
+
+            if (total <= 0) return null;
+
+            var roll = Random.Range(0, total);
+            foreach (var p in cfg.Patterns)
+            {
+                if (p is not { Weight: > 0 }) continue;
+                if (roll < p.Weight) return p;
+                roll -= p.Weight;
+            }
+            return null;
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Session\GameSessionBuilder.cs ===
+using System;
+using Game.Client.Common;
+using Game.Core.Common;
+using Game.Core.Services;
+using Game.Core.Session;
+using Game.Core.Units;
+using Game.Client.DI;
+using Game.Client.Input;
+using Game.Client.Services;
+using Game.Client.Units;
+using Game.Client.Views;
+using Game.Core;
+using VContainer;
+using UnityEngine;
+
+namespace Game.Client.Session
+{
+    /// <summary>
+    /// Composition root for one gameplay session.
+    /// Creates a VContainer child scope with all session-scoped services,
+    /// then returns a ready-to-tick ISessionRunner.
+    /// </summary>
+    public sealed class GameSessionBuilder : ISessionBuilder
+    {
+        private readonly IObjectResolver   _sceneContainer;
+        private readonly GameplaySceneRefs _refs;
+        private readonly Vector3    _carStartPosition;
+        private readonly Quaternion _carStartRotation;
+        private readonly Quaternion _turretStartRotation;
+
+        public GameSessionBuilder(IObjectResolver sceneContainer, GameplaySceneRefs refs)
+        {
+            _sceneContainer      = sceneContainer;
+            _refs                = refs;
+            _carStartPosition    = refs.CarTransform.position;
+            _carStartRotation    = refs.CarTransform.rotation;
+            _turretStartRotation = refs.TurretTransform.rotation;
+        }
+
+        public ISessionRunner NewSessionRunner()
+        {
+            ResetSceneTransforms();
+
+            var sessionContainer = _sceneContainer.CreateScope(builder =>
+            {
+                builder.Register<GameSession>(Lifetime.Scoped);
+
+                // --- Session-scoped core services ---
+                builder.Register<TickSystemRegistry>(Lifetime.Scoped);
+                builder.Register<DamageService>(Lifetime.Scoped);
+                builder.Register<IUnitRegistry, UnitRegistry>(Lifetime.Scoped);
+                builder.Register<ITargetsProvider, TargetsProvider>(Lifetime.Scoped);
+                builder.Register<HitService>(Lifetime.Scoped);
+
+                // --- Registry ---
+                builder.Register<GameStatistics>(_ => new GameStatistics(), Lifetime.Scoped);
+
+                // --- Factories ---
+                builder.Register<IEnemyFactory, EnemyFactory>(Lifetime.Scoped)
+                    .WithParameter<Func<EnemyView, Transform, EnemyView>>(c => c.ScopedInstantiate)
+                    .WithParameter("parent", _refs.UnitsRoot);
+                
+                builder.Register<ProjectileFactory>(Lifetime.Scoped)
+                    .WithParameter<Func<ProjectileView, Transform, ProjectileView>>(c => c.ScopedInstantiate)
+                    .WithParameter("parent", _refs.UnitsRoot);
+
+                // --- Runtime services (non-DI params passed via WithParameter) ---
+                builder.Register<GameFlowService>(Lifetime.Scoped)
+                    .WithParameter(_refs.LevelConfig.LevelLength);
+
+                builder.Register<RoadSpawnService>(Lifetime.Scoped)
+                    .WithParameter(_refs.LevelConfig);
+
+                builder.Register<GroundLooperService>(Lifetime.Scoped)
+                    .WithParameter(_refs.GroundLooperConfig);
+
+                builder.Register<CameraFollowService>(Lifetime.Scoped);
+            });
+
+            Initialize(sessionContainer);
+            return new GameSessionRunner(sessionContainer);
+        }
+
+        // ------------------------------------------------------------------ private
+
+        private void Initialize(IObjectResolver sessionContainer)
+        {
+            var session      = sessionContainer.Resolve<GameSession>();
+            var tickRegistry = sessionContainer.Resolve<TickSystemRegistry>();
+            var statistics = sessionContainer.Resolve<GameStatistics>();
+
+            var carView = _refs.CarTransform.GetComponent<CarView>();
+            var player  = new PlayerUnit(_refs.PlayerConfig, carView, tickRegistry, sessionContainer);
+            session.Initialize(player);
+
+            var carColliderLink = carView.GetComponent<UnitColliderLink>();
+            if (carColliderLink != null)
+            {
+                sessionContainer.Inject(carColliderLink);
+                carColliderLink.Bind(player);
+            }
+
+            var turretView = _refs.TurretTransform.GetComponent<TurretView>();
+            _ = new Turret(
+                player,
+                turretView,
+                _refs.PlayerConfig.TurretConfig,
+                _sceneContainer.Resolve<IHorizontalDragInput>(),
+                _sceneContainer.Resolve<IFireInput>(),
+                session,
+                tickRegistry,
+                sessionContainer.Resolve<ITargetsProvider>());
+
+            statistics.Reset(_refs.LevelConfig.LevelLength);
+            session.SetState(GameState.WaitingToStart);
+        }
+
+        private void ResetSceneTransforms()
+        {
+            _refs.CarTransform.SetPositionAndRotation(_carStartPosition, _carStartRotation);
+            _refs.TurretTransform.rotation = _turretStartRotation;
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Session\GameSessionRunner.cs ===
+using System;
+using Game.Core.Common;
+using Game.Core.Services;
+using Game.Client.Input;
+using Game.Client.Services;
+using Game.Core.Session;
+using VContainer;
+
+namespace Game.Client.Session
+{
+    /// <summary>
+    /// Drives the update loop for one session.
+    /// Tick order: TickSystemRegistry (units/projectiles move) в†’ GameFlow в†’ RoadSpawn в†’ Camera.
+    /// </summary>
+    public sealed class GameSessionRunner : ISessionRunner, IDisposable
+    {
+        public GameSession Session => _session;
+        
+        private readonly IObjectResolver            _sessionContainer;
+        private readonly TickSystemRegistry         _tickRegistry;
+        private readonly GameFlowService            _flowService;
+        private readonly RoadSpawnService           _roadSpawn;
+        private readonly GroundLooperService        _groundLooper;
+        private readonly CameraFollowService        _cameraFollow;
+        private readonly IFireInput                 _fireInput;
+        private readonly GameSession                _session;
+
+        public GameSessionRunner(IObjectResolver sessionContainer)
+        {
+            _sessionContainer = sessionContainer;
+            _session          = sessionContainer.Resolve<GameSession>();
+            _tickRegistry     = sessionContainer.Resolve<TickSystemRegistry>();
+            _flowService      = sessionContainer.Resolve<GameFlowService>();
+            _roadSpawn        = sessionContainer.Resolve<RoadSpawnService>();
+            _groundLooper     = sessionContainer.Resolve<GroundLooperService>();
+            _cameraFollow     = sessionContainer.Resolve<CameraFollowService>();
+            _fireInput        = sessionContainer.Resolve<IFireInput>();
+        }
+
+        public void Tick(float deltaTime)
+        {
+            if (_fireInput.WasPressedThisFrame())
+                _flowService.RegisterTap();
+            _cameraFollow.Tick(deltaTime);
+            _flowService.Tick(deltaTime);
+            _roadSpawn.Tick(deltaTime);
+            _groundLooper.Tick(deltaTime);
+            
+            if (_session.IsPaused) return; 
+
+            // Move all units & projectiles
+            _tickRegistry.Tick(deltaTime);
+            
+        }
+
+        public void Dispose()
+        {
+            _tickRegistry?.Clear();
+            _sessionContainer?.Dispose();
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Session\SessionEntryPoint.cs ===
+using Game.Core.Session;
+using VContainer;
+using UnityEngine;
+
+namespace Game.Client.Session
+{
+    public class SessionEntryPoint : MonoBehaviour
+    {
+        [Inject] private SessionCoordinator _sessionCoordinator;
+
+        private void Start()
+        {
+            _sessionCoordinator.StartNewSession();
+        }
+
+        private void Update()
+        {
+            _sessionCoordinator.Tick(Time.deltaTime);
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\UI\BaseGameWindow.cs ===
+using FTg.Common.Observables;
+using Game.Core.Session;
+using UnityEngine;
+using VContainer;
+
+namespace Game.Client.UI
+{
+    public abstract class BaseGameWindow: MonoBehaviour
+    {
+        private readonly CompositeDisposable _disposables = new();
+
+        [Inject]
+        public void Construct(SessionCoordinator coordinator)
+        {
+            coordinator.NewSession.Subscribe(Bind).AddTo(_disposables);
+            coordinator.EndSession.Subscribe(Unbind).AddTo(_disposables);
+        }
+
+        protected virtual void Bind(GameSession session)
+        {
+        }
+
+        protected virtual void Unbind(GameSession session)
+        {
+        }
+        
+        private void OnDestroy()
+        {
+            _disposables.Dispose();
+        }
+        
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\UI\HudGame.cs ===
+using System;
+using FTg.Common.Observables;
+using Game.Core.Session;
+using Game.Core.Units;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Game.Client.UI
+{
+    public class HudGame: BaseGameWindow
+    {
+        [SerializeField] private TMP_Text scoreText;
+        [SerializeField] private Image healthBarFill;
+        [SerializeField] private TMP_Text healthText;
+        [SerializeField] private Image levelBarFill;
+        
+        private CompositeDisposable _disposables = new();
+        private GameSession _session;
+        
+        protected override void Bind(GameSession session)
+        {
+            base.Bind(session);
+            _disposables?.Dispose();
+            _disposables = new CompositeDisposable();
+            _session = session;
+            _session.Player.Stats.Get<HpStat>().OnChange.Subscribe(OnHealthChanged).AddTo(_disposables);
+            OnHealthChanged(_session.Player.Stats.Get<HpStat>());
+            _session.GameStatistics.OnEnemyKilled.Subscribe(OnScoreChanged).AddTo(_disposables);
+            OnScoreChanged(_session.GameStatistics.KillCount);
+        }
+
+        private void Update()
+        {
+            if (_session == null) return;
+            var length = _session.Player.Position.z / (_session.StartPositionZ + _session.GameStatistics.LevelLength);
+            levelBarFill.fillAmount = Mathf.Clamp01(length);
+        }
+
+        private void OnScoreChanged(int score)
+        {
+            scoreText.text = $"Score: {score}";
+        }
+        
+        private void OnHealthChanged(UnitStat stat)
+        {
+            healthBarFill.fillAmount = stat.Ratio;
+            healthText.text = $"{(int)stat.Value} / {(int)stat.Max}";
+        }
+
+        protected override void Unbind(GameSession session)
+        {
+            base.Unbind(session);
+            _disposables?.Dispose();
+            _disposables = null;
+            _session = null;
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\UI\UiSystem.cs ===
+using System;
+using FTg.Common.Observables;
+using Game.Core;
+using Game.Core.Session;
+using UnityEngine;
+using VContainer.Unity;
+
+namespace Game.Client.UI
+{
+    public sealed class UiSystem : IDisposable, IInitializable
+    {
+        private readonly GameObject  _winPanel;
+        private readonly GameObject  _losePanel;
+        private readonly GameObject  _beginGamePanel;
+        private readonly GameObject  _hudGame;
+        
+        private readonly CompositeDisposable _disposables = new ();
+        private SessionCoordinator _coordinator;
+        private IDisposable _stateSubscription;
+
+        public UiSystem(SessionCoordinator coordinator, 
+            GameObject hudGame,
+            GameObject beginGamePanel,
+            GameObject winPanel,
+            GameObject losePanel)
+        {
+            _hudGame = hudGame;
+            _beginGamePanel = beginGamePanel;
+            _winPanel = winPanel;
+            _losePanel = losePanel;
+            coordinator.NewSession.Subscribe(session =>
+            {
+                _stateSubscription = session.GameStateChanged.Subscribe(OnStateChanged);
+                OnStateChanged(session.State);
+            }).AddTo(_disposables);
+            coordinator.EndSession.Subscribe(_ =>
+            {
+                _stateSubscription?.Dispose();
+            }).AddTo(_disposables);
+            HideAll();
+        }
+
+        public void Initialize(){ }
+
+        public void Dispose()
+        {
+            _disposables.Dispose();
+            _stateSubscription?.Dispose();
+        }
+
+        private void OnStateChanged(GameState state)
+        {
+            HideAll();
+            switch (state)
+            {
+                case GameState.Win:  _winPanel?.SetActive(true);  break;
+                case GameState.Lose: _losePanel?.SetActive(true); break;
+                case GameState.WaitingToStart: _beginGamePanel?.SetActive(true); break;
+                case GameState.Playing: 
+                    _hudGame?.SetActive(true);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(state), state, null);
+            }
+        }
+
+        private void HideAll()
+        {
+            _hudGame?.SetActive(false);
+            _winPanel?.SetActive(false);
+            _losePanel?.SetActive(false);
+            _beginGamePanel?.SetActive(false);
+        }
+       
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\BaseUnit.cs ===
+using Game.Core.Units;
+using VContainer;
+
+namespace Game.Client.Units
+{
+    public abstract class BaseUnit : Unit
+    {
+        protected BaseUnit(UnitConfig config, IObjectResolver container) : base(config)
+        {
+            foreach (var skill in Skills.All)
+                container.Inject(skill);
+            foreach (var skill in Skills.All)
+                skill.Bind(this);
+            foreach (var stat in Stats.All)
+                container.Inject(stat);
+        }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\EnemyStates\EnemyContext.cs ===
+using Game.Client.Views;
+using Game.Core.Services;
+
+namespace Game.Client.Units
+{
+    /// <summary>
+    /// РљРѕРЅС‚РµРєСЃС‚ FSM-СЃРѕСЃС‚РѕСЏРЅРёР№ EnemyUnit.
+    /// Р”Р°С‘С‚ СЃРѕСЃС‚РѕСЏРЅРёСЏРј РґРѕСЃС‚СѓРї РєР°Рє Рє Р»РѕРіРёРєРµ СЋРЅРёС‚Р° (Unit), С‚Р°Рє Рё Рє РµРіРѕ РІРёР·СѓР°Р»СЊРЅРѕРјСѓ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёСЋ (View).
+    /// </summary>
+    public sealed class EnemyContext
+    {
+        public EnemyUnit     Unit       { get; }
+        public EnemyView     View       { get; }
+
+        /// <summary>
+        /// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РІ <see cref="EnemyUnit.OnDied"/> РїРµСЂРµРґ РїРµСЂРµС…РѕРґРѕРј РІ Dead-СЃРѕСЃС‚РѕСЏРЅРёРµ.
+        /// DeadState РёСЃРїРѕР»СЊР·СѓРµС‚ СЌС‚Рѕ Р·РЅР°С‡РµРЅРёРµ РґР»СЏ РІС‹Р±РѕСЂР° Р°РЅРёРјР°С†РёРё СЃРјРµСЂС‚Рё.
+        /// </summary>
+        public DamageSource  KillSource { get; set; } = DamageSource.Unknown;
+
+        public EnemyContext(EnemyUnit unit, EnemyView view)
+        {
+            Unit = unit;
+            View = view;
+        }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\EnemyStates\EnemyUnit.AttackState.cs ===
+using System.Threading;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using Game.Core;
+using Game.Core.Common.Fsm;
+using Game.Core.Units;
+using UnityEngine;
+namespace Game.Client.Units
+{
+    public sealed partial class EnemyUnit
+    {
+        private sealed class AttackState : IState<EnemyContext, EnemyState>
+        {
+            public EnemyState Id => EnemyState.Attack;
+
+            public Task Enter(EnemyContext ctx, CancellationToken ct)
+            {
+                ctx.View.SetAnimationState(EnemyState.Attack);
+                return Task.CompletedTask;
+            }
+
+            /// <summary>
+            /// Р–РґС‘С‚, РїРѕРєР° Р°РЅРёРјР°С†РёСЏ Р°С‚Р°РєРё РЅРµ РїСЂРѕРёРіСЂР°РµС‚ РґРѕ РєРѕРЅС†Р°,
+            /// РїСЂРµР¶РґРµ С‡РµРј РїРѕР·РІРѕР»РёС‚СЊ StateMachine РїРµСЂРµР№С‚Рё Рє СЃР»РµРґСѓСЋС‰РµРјСѓ СЃРѕСЃС‚РѕСЏРЅРёСЋ.
+            /// </summary>
+            public Task Exit(EnemyContext ctx, CancellationToken ct) => ctx.View.WaitForStateComplete(EnemyState.Attack, ct).AsTask();
+
+            public bool Tick(EnemyContext ctx, float dt, out EnemyState next)
+            {
+                var skill     = ctx.Unit.Skills.Get<IAttackSkill>();
+                var target    = ctx.Unit._session.Player;
+                var origin    = ctx.Unit.Position;
+                var direction = (target.Position - origin).normalized;
+                var context   = new AttackContext(ctx.Unit, origin, direction, ctx.Unit.TargetMask, target);
+                if (!skill.CanUse(context))
+                {
+                    next = EnemyState.Chase;
+                    return true;
+                }
+                if (Time.time >= ctx.Unit._nextAttackTime)
+                {
+                    ctx.Unit._nextAttackTime = Time.time + ctx.Unit._config.AttackInterval;
+                    skill.Use(context);
+                }
+                next = EnemyState.Attack;
+                return false;
+            }
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\EnemyStates\EnemyUnit.ChaseState.cs ===
+using System.Threading;
+using System.Threading;
+using System.Threading.Tasks;
+using Game.Core;
+using Game.Core.Common.Fsm;
+using Game.Core.Units;
+using UnityEngine;
+namespace Game.Client.Units
+{
+    public sealed partial class EnemyUnit
+    {
+        private sealed class ChaseState : IState<EnemyContext, EnemyState>
+        {
+            public EnemyState Id => EnemyState.Chase;
+            public Task Enter(EnemyContext ctx, CancellationToken ct)
+            {
+                ctx.View.SetAnimationState(EnemyState.Chase);
+                return Task.CompletedTask;
+            }
+            public Task Exit(EnemyContext ctx, CancellationToken ct) => Task.CompletedTask;
+            
+            public bool Tick(EnemyContext ctx, float dt, out EnemyState next)
+            {
+                var target = ctx.Unit._session.Player;
+                if (target == null) { next = EnemyState.Chase; return false; }
+                var origin    = ctx.Unit.Position;
+                var toTarget  = target.Position - origin;
+                var context   = new AttackContext(ctx.Unit, origin, toTarget.normalized, ctx.Unit.TargetMask, target);
+                if (ctx.Unit.Skills.Get<IAttackSkill>().CanUse(context))
+                {
+                    next = EnemyState.Attack;
+                    return true;
+                }
+                var dist = toTarget.magnitude;
+                var dir  = toTarget / dist;
+                ctx.View.transform.SetPositionAndRotation(
+                    ctx.Unit.Position + dir * (ctx.Unit._config.MoveSpeed * dt),
+                    Quaternion.LookRotation(dir));
+                // Cull пїЅ enemy is far behind the player
+                if (target.Position.z - ctx.Unit.Position.z > CullBehindDistance)
+                    ctx.Unit._onOutOfRange?.Invoke(ctx.Unit);
+                next = EnemyState.Chase;
+                return false;
+            }
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\EnemyStates\EnemyUnit.DeadState.cs ===
+using System.Threading;
+using System.Threading.Tasks;
+using Game.Client.Views;
+using Game.Core;
+using Game.Core.Common.Fsm;
+using Game.Core.Services;
+
+namespace Game.Client.Units
+{
+    public sealed partial class EnemyUnit
+    {
+        private sealed class DeadState : IState<EnemyContext, EnemyState>
+        {
+            private const string VfxBloodBurstId = "BloodBurst";
+            
+            public EnemyState Id => EnemyState.Dead;
+
+            /// <summary>
+            /// Р’С‹Р±РёСЂР°РµС‚ Р°РЅРёРјР°С†РёСЋ СЃРјРµСЂС‚Рё РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РёСЃС‚РѕС‡РЅРёРєР° СѓСЂРѕРЅР°:
+            /// вЂ” Projectile в†’ DeadByProjectile
+            /// вЂ” Ram        в†’ DeadByRam
+            /// вЂ” РѕСЃС‚Р°Р»СЊРЅРѕРµ  в†’ Dead (РґРµС„РѕР»С‚РЅР°СЏ Р°РЅРёРјР°С†РёСЏ)
+            /// Р–РґС‘С‚ Р·Р°РІРµСЂС€РµРЅРёСЏ Р°РЅРёРјР°С†РёРё, Р·Р°С‚РµРј СѓРІРµРґРѕРјР»СЏРµС‚ С„Р°Р±СЂРёРєСѓ Рѕ РіРёР±РµР»Рё РІСЂР°РіР°.
+            /// </summary>
+            public async Task Enter(EnemyContext ctx, CancellationToken ct)
+            {
+                ctx.View.GetComponent<UnitColliderLink>()?.Unbind();
+                ctx.View.PlayVfx(VfxBloodBurstId);
+                if (ctx.KillSource == DamageSource.Projectile)
+                {
+                    ctx.View.SetAnimationState(EnemyState.Dead);
+                    await ctx.View.WaitForStateComplete(EnemyState.Dead, ct);
+                }
+                ctx.Unit._onDied?.Invoke(ctx.Unit);
+            }
+
+            public Task Exit(EnemyContext ctx, CancellationToken ct) => Task.CompletedTask;
+
+            public bool Tick(EnemyContext ctx, float dt, out EnemyState next)
+            {
+                next = EnemyState.Dead;
+                return false;
+            }
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\EnemyStates\EnemyUnit.IdleState.cs ===
+using System.Threading;
+using System.Threading;
+using System.Threading.Tasks;
+using Game.Core;
+using Game.Core.Common.Fsm;
+using Game.Core.Units;
+using UnityEngine;
+
+namespace Game.Client.Units
+{
+    public sealed partial class EnemyUnit
+    {
+        private sealed class IdleState : IState<EnemyContext, EnemyState>
+        {
+            public EnemyState Id => EnemyState.Idle;
+
+            private float _timeLeft;
+
+            public Task Enter(EnemyContext ctx, CancellationToken ct)
+            {
+                ctx.View.SetAnimationState(EnemyState.Idle);
+                _timeLeft = Random.Range(
+                    ctx.Unit._config.WanderIdleMinDuration,
+                    ctx.Unit._config.WanderIdleMaxDuration);
+                return Task.CompletedTask;
+            }
+
+            public Task Exit(EnemyContext ctx, CancellationToken ct) => Task.CompletedTask;
+
+            public bool Tick(EnemyContext ctx, float dt, out EnemyState next)
+            {
+
+                var target = ctx.Unit._session.Player;
+                if (target != null &&
+                    Vector3.Distance(ctx.View.transform.position, target.Position) <= ctx.Unit._config.AggroRadius)
+                {
+                    next = EnemyState.Chase;
+                    return true;
+                }
+
+                _timeLeft -= dt;
+                if (_timeLeft <= 0f)
+                {
+                    next = EnemyState.Wander;
+                    return true;
+                }
+
+                next = EnemyState.Idle;
+                return false;
+            }
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\EnemyStates\EnemyUnit.WanderState.cs ===
+using System.Threading;
+using System.Threading;
+using System.Threading.Tasks;
+using Game.Core;
+using Game.Core.Common.Fsm;
+using Game.Core.Units;
+using UnityEngine;
+namespace Game.Client.Units
+{
+    public sealed partial class EnemyUnit
+    {
+        private sealed class WanderState : IState<EnemyContext, EnemyState>
+        {
+            public EnemyState Id => EnemyState.Wander;
+            private Vector3 _direction;
+            private float   _timeLeft;
+            private float   _steerTimer;
+            public Task Enter(EnemyContext ctx, CancellationToken ct)
+            {
+                ctx.View.SetAnimationState(EnemyState.Wander);
+                _direction  = RandomFlatDirection();
+                _timeLeft   = Random.Range(ctx.Unit._config.WanderMinDuration, ctx.Unit._config.WanderMaxDuration);
+                _steerTimer = Random.Range(0.6f, 1.4f);
+                return Task.CompletedTask;
+            }
+            
+            public Task Exit(EnemyContext ctx, CancellationToken ct) => Task.CompletedTask;
+            
+            public bool Tick(EnemyContext ctx, float dt, out EnemyState next)
+            {
+                var target = ctx.Unit._session.Player;
+                if (target != null &&
+                    Vector3.Distance(ctx.View.transform.position, target.Position) <= ctx.Unit._config.AggroRadius)
+                {
+                    next = EnemyState.Chase;
+                    return true;
+                }
+                _steerTimer -= dt;
+                if (_steerTimer <= 0f)
+                {
+                    var angle = Random.Range(-50f, 50f);
+                    _direction  = Quaternion.Euler(0f, angle, 0f) * _direction;
+                    _steerTimer = Random.Range(0.6f, 1.4f);
+                }
+                var targetRotation = Quaternion.LookRotation(_direction);
+                ctx.View.transform.SetPositionAndRotation(
+                    ctx.Unit.Position + _direction * (ctx.Unit._config.WanderSpeed * dt),
+                    Quaternion.Slerp(ctx.View.transform.rotation, targetRotation, dt * 3f));
+                _timeLeft -= dt;
+                if (_timeLeft <= 0f) { next = EnemyState.Idle; return true; }
+                next = EnemyState.Wander;
+                return false;
+            }
+            private static Vector3 RandomFlatDirection()
+            {
+                var rad = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+                return new Vector3(Mathf.Sin(rad), 0f, Mathf.Cos(rad));
+            }
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\Factories\EnemyFactory.cs ===
+using System;
+using Game.Core.Common;
+using Game.Core.Services;
+using Game.Client.Config;
+using Game.Client.Views;
+using Game.Core.Units;
+using Game.Core.Session;
+using VContainer;
+using UnityEngine;
+
+namespace Game.Client.Units
+{
+    public sealed class EnemyFactory : IEnemyFactory, IDisposable
+    {
+        private readonly PrefabPool<EnemyView> _pool;
+        private readonly GameStatistics _registry;
+        private readonly GameSession _session;
+        private readonly TickSystemRegistry _tickRegistry;
+        private readonly IObjectResolver _container;
+        private readonly DamageService _damageService;
+    
+        public EnemyFactory(
+            Func<EnemyView, Transform, EnemyView> factoryMethod,
+            Transform parent,
+            GameStatistics registry,
+            GameSession session,
+            TickSystemRegistry tickRegistry,
+            DamageService damageService,
+            IObjectResolver container)
+        {
+            _pool = new PrefabPool<EnemyView>(factoryMethod, parent);
+            _registry = registry;
+            _session = session;
+            _tickRegistry = tickRegistry;
+            _damageService = damageService;
+            _container = container;
+        }
+
+        public void Spawn(UnitConfig config, Vector3 position, Quaternion rotation)
+        {
+            var enemyConfig = (EnemyConfig)config;
+            var view = _pool.Get(enemyConfig.Prefab, position, rotation);
+            var collideLink = view.GetComponent<UnitColliderLink>();
+
+            var agent = new EnemyUnit(
+                enemyConfig, view,
+                onDied: a =>
+                {
+                    _registry.ReportKill();
+                    a.Dispose();
+                    _pool.Return(view);
+                    collideLink?.Unbind();
+                },
+                onOutOfRange: a =>
+                {
+                    _registry.TrackRelease();
+                    a.Dispose();
+                    _pool.Return(view);
+                    collideLink?.Unbind();
+                },
+                session: _session,
+                tickSystemRegistry: _tickRegistry,
+                damageService: _damageService,
+                container: _container);
+
+            collideLink?.Bind(agent);
+            _registry.TrackSpawn();
+        }
+
+        public void Dispose()
+        {
+            _pool?.Dispose();
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\Factories\ProjectileFactory.cs ===
+using System;
+using Game.Core.Common;
+using Game.Client.Config;
+using Game.Client.Views;
+using Game.Core.Services;
+using UnityEngine;
+
+namespace Game.Client.Units
+{
+    public sealed class ProjectileFactory: IDisposable
+    {
+        private readonly PrefabPool<ProjectileView> _pool;
+        private readonly TickSystemRegistry         _tickRegistry;
+        private readonly DamageService              _damageService;
+        private readonly HitService                 _hitService;
+
+        public ProjectileFactory(
+            Func<ProjectileView, Transform, ProjectileView> factoryMethod,
+            Transform parent,
+            TickSystemRegistry         tickRegistry,
+            DamageService              damageService,
+            HitService                 hitService)
+        {
+            _pool          = new PrefabPool<ProjectileView>(factoryMethod, parent);
+            _tickRegistry  = tickRegistry;
+            _damageService = damageService;
+            _hitService    = hitService;
+        }
+
+        public Projectile Spawn(ProjectileConfig projectileConfig, LayerMask hitMask, Vector3 origin, Vector3 direction)
+        {
+            var view       = _pool.Get(projectileConfig.Prefab, origin, Quaternion.LookRotation(direction));
+            var projectile = new Projectile(
+                projectileConfig,
+                view,
+                hitMask,
+                onExpire: p =>
+                {
+                    _tickRegistry.Unregister(p);
+                    _pool.Return(view);
+                },
+                _damageService,
+                _hitService);
+
+            _tickRegistry.Register(projectile);
+            return projectile;
+        }
+
+        public void Dispose()
+        {
+            _pool?.Dispose();
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\Skills\MeleeAttackSkill.cs ===
+using System;
+using Game.Core.Services;
+using Game.Core.Units;
+using VContainer;
+using UnityEngine;
+
+namespace Game.Client.Units
+{
+    [Serializable]
+    public class MeleeAttackSkill : IAttackSkill, IHitHandler
+    {
+        [SerializeField, Min(0f)] private float radius = 1.5f;
+        [SerializeField, Min(0)]  private int   damage = 10;
+
+        [NonSerialized] private DamageService _damageService;
+        [NonSerialized] private HitService    _hitService;
+
+        [Inject]
+        private void Inject(DamageService damageService, HitService hitService)
+        {
+            _damageService = damageService;
+            _hitService    = hitService;
+        }
+
+        public void Dispose() { }
+
+        public ISkill Clone() => new MeleeAttackSkill { radius = radius, damage = damage };
+
+        public bool CanUse(in AttackContext context)
+        {
+            if (context.Source == null || context.Target == null) return false;
+            return Vector3.Distance(context.Source.Position, context.Target.Position) <= radius;
+        }
+
+        public void Use(in AttackContext context)
+        {
+            if (!CanUse(context)) return;
+            _hitService.ProcessFirst(new HitQuery(
+                HitQueryType.OverlapSphere,
+                context.Source,
+                context.Origin + context.Direction * (radius * 0.5f),
+                context.Direction,
+                0f, radius, context.HitMask, 1), this);
+        }
+
+        public void Handle(Unit source, Unit target)
+            => _damageService.Apply(new DamageRequest(source, target, damage));
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\Skills\ProjectileAttackSkill.cs ===
+using System;
+using Game.Client.Config;
+using Game.Core.Units;
+using VContainer;
+using UnityEngine;
+
+namespace Game.Client.Units
+{
+    [Serializable]
+    public class ProjectileAttackSkill : IAttackSkill
+    {
+        [SerializeField] private ProjectileConfig projectileConfig;
+
+        [NonSerialized] private ProjectileFactory _projectileFactory;
+
+        [Inject]
+        private void Inject(ProjectileFactory projectileFactory) => _projectileFactory = projectileFactory;
+
+        public void Dispose() { }
+
+        public ISkill Clone() => new ProjectileAttackSkill { projectileConfig = projectileConfig };
+
+        public bool CanUse(in AttackContext context)
+            => context.Source != null && context.Direction.sqrMagnitude > 0.0001f;
+
+        public void Use(in AttackContext context)
+        {
+            if (!CanUse(context)) return;
+            var projectile = _projectileFactory.Spawn(
+                projectileConfig, context.HitMask, context.Origin, context.Direction);
+            projectile.Activate(context.Source, context.Target, context.Direction);
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\Skills\RamDamageSkill.cs ===
+using System;
+using System.Collections.Generic;
+using Game.Core.Common;
+using Game.Core.Services;
+using Game.Core.Units;
+using VContainer;
+using UnityEngine;
+
+namespace Game.Client.Skills
+{
+    [Serializable]
+    public sealed class RamDamageSkill : ISkill, IHitHandler, ITickSystem
+    {
+        [SerializeField, Min(0f)] private float radius  = 1.5f;
+        [SerializeField, Min(0)]  private int   damage  = 10;
+        [SerializeField, Min(0f)] private float length  = 3f;
+        [SerializeField, Min(0f)] private float cooldown = 0.5f;
+
+        private DamageService      _damageService;
+        private HitService         _hitService;
+        private TickSystemRegistry _tickRegistry;
+        private Unit               _owner;
+
+        private readonly Dictionary<Unit, float> _cooldowns = new();
+
+        [Inject]
+        private void Inject(DamageService damageService, HitService hitService, TickSystemRegistry tickRegistry)
+        {
+            _damageService = damageService;
+            _hitService    = hitService;
+            _tickRegistry  = tickRegistry;
+            _tickRegistry.Register(this);
+        }
+
+        public void Bind(Unit owner) => _owner = owner;
+
+        public ISkill Clone() => new RamDamageSkill { radius = radius, damage = damage, length = length, cooldown = cooldown };
+
+        public void Dispose() => _tickRegistry?.Unregister(this);
+
+        public void Tick(float dt)
+        {
+            if (_owner == null) return;
+
+            var origin    = _owner.Position;
+            var forward   = _owner.Forward;
+            var point2    = origin + forward * length;
+
+            var query = new HitQuery(
+                HitQueryType.OverlapCapsule,
+                _owner,
+                origin,
+                forward,
+                0f,
+                radius,
+                _owner.TargetMask,
+                8,
+                origin,
+                point2);
+
+            _hitService.Process(query, this);
+        }
+        
+        public bool CanApply(Unit source, Unit target)
+        {
+            if (source == null || target == null)
+                return false;
+
+            return !_cooldowns.TryGetValue(target, out var nextTime) || !(Time.time < nextTime);
+        }
+
+        public void Apply(Unit source, Unit target)
+        {
+            if (!CanApply(source, target))
+                return;
+
+            _damageService.Apply(new DamageRequest(source, target, damage, DamageSource.Ram));
+            _cooldowns[target] = Time.time + cooldown;
+        }
+
+        public void Handle(Unit source, Unit target)
+        {
+            Apply(source, target);
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\Specifics\EnemyUnit.cs ===
+using System;
+using FTg.Common.Observables;
+using Game.Core.Common;
+using Game.Core.Common.Fsm;
+using Game.Core.Services;
+using Game.Core.Session;
+using Game.Core.Units;
+using Game.Client.Config;
+using Game.Client.Views;
+using Game.Core;
+using VContainer;
+using UnityEngine;
+
+namespace Game.Client.Units
+{
+    /// <summary>
+    /// Pure C# enemy unit. FSM states are defined in separate partial-class files:
+    /// EnemyUnit.IdleState.cs, WanderState.cs, ChaseState.cs, AttackState.cs, DeadState.cs
+    /// </summary>
+    public sealed partial class EnemyUnit : BaseUnit, IDisposable
+    {
+        private const float CullBehindDistance = 10f;
+        public override Vector3 Position => _view.transform.position;
+        public override Vector3 AimPoint => _view.AimPoint.position;
+        public override Vector3 Forward  => _view.transform.forward;
+
+        private readonly EnemyView                              _view;
+        private readonly Action<EnemyUnit>                     _onDied;
+        private readonly Action<EnemyUnit>                     _onOutOfRange;
+        private readonly StateMachine<EnemyContext, EnemyState> _fsm;
+        private readonly EnemyConfig                           _config;
+        private readonly DamageService                         _damageService;
+        private readonly IDisposable                           _diedSubscription;
+        private readonly TickSystemRegistry                    _tickSystemRegistry;
+        private readonly GameSession                           _session;
+        private readonly EnemyContext                          _context;
+        private          float                                 _nextAttackTime;
+        private          bool                                  _isDead;
+
+        public EnemyUnit(
+            EnemyConfig        config,
+            EnemyView      view,
+            Action<EnemyUnit>  onDied,
+            Action<EnemyUnit>  onOutOfRange,
+            GameSession        session,
+            TickSystemRegistry tickSystemRegistry,
+            DamageService     damageService,
+            IObjectResolver    container) : base(config, container)
+        {
+            _view         = view;
+            _config       = config;
+            _onDied       = onDied;
+            _onOutOfRange = onOutOfRange;
+
+            _context = new EnemyContext(this, view);
+
+            _fsm = new StateMachine<EnemyContext, EnemyState>(_context)
+                .Add(new IdleState())
+                .Add(new WanderState())
+                .Add(new ChaseState())
+                .Add(new AttackState())
+                .Add(new DeadState());
+            _fsm.Start(EnemyState.Idle);
+
+            // Skills and stats are injected by BaseUnit via container.Inject delegate.
+            _session            = session;
+            _tickSystemRegistry = tickSystemRegistry;
+            _tickSystemRegistry.Register(_fsm);
+
+            // РЎРјРµСЂС‚СЊ вЂ” РІРЅРµС€РЅРёР№ lifecycle-СЃРёРіРЅР°Р»: FSM СЃР°Рј РЅРµ Р·РЅР°РµС‚ РїСЂРѕ HP
+            _diedSubscription  = damageService.Died.Subscribe(OnDied);
+        }
+
+        private void OnDied((Unit unit, DamageSource source) data)
+        {
+            if (data.unit != this) return;
+            if (_isDead) return;          
+            
+            _isDead = true;
+            _context.KillSource = data.source;
+            _fsm.ForceTransitionTo(EnemyState.Dead);
+        }
+
+        public void Dispose()
+        {
+            _diedSubscription?.Dispose();
+            _tickSystemRegistry.Unregister(_fsm);
+            _fsm.Dispose();
+        }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\Specifics\PlayerUnit.cs ===
+using System.Threading;
+using System.Threading.Tasks;
+using Game.Client.Config;
+using Game.Client.Views;
+using Game.Core;
+using Game.Core.Common;
+using Game.Core.Common.Fsm;
+using Game.Core.Units;
+using VContainer;
+using UnityEngine;
+
+namespace Game.Client.Units
+{
+    public sealed class PlayerUnit : BaseUnit
+    {
+        public override Vector3 Position => _transform.position;
+        public override Vector3 AimPoint => _transform.position;
+
+        private readonly float                               _speed;
+        private readonly Transform                           _transform;
+        private readonly StateMachine<PlayerUnit, CarState>  _fsm;
+
+        public PlayerUnit(PlayerConfig config, CarView view,
+            TickSystemRegistry tickSystemRegistry, IObjectResolver container) : base(config, container)
+        {
+
+            _transform = view.transform;
+            _speed = config.MoveSpeed;
+
+            _fsm = new StateMachine<PlayerUnit, CarState>(this)
+                .Add(new DrivingState())
+                .Add(new DeadState());
+            _fsm.Start(CarState.Driving);
+
+            tickSystemRegistry.Register(_fsm);
+        }
+
+        #region fsm states
+        private sealed class DrivingState : IState<PlayerUnit, CarState>
+        {
+            public CarState Id => CarState.Driving;
+            public Task Enter(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask; 
+            public Task Exit(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask;
+
+            public bool Tick(PlayerUnit ctx, float dt, out CarState next)
+            {
+
+                if (!ctx.Stats.Get<HpStat>().IsAlive)
+                {
+                    next = CarState.Dead; 
+                    return true;
+                }
+
+                var pos = ctx._transform.position;
+                pos.z += ctx._speed * dt;
+                ctx._transform.position = pos;
+
+                next = CarState.Driving;
+                return false;
+            }
+        }
+
+        private sealed class DeadState : IState<PlayerUnit, CarState>
+        {
+            public CarState Id => CarState.Dead;
+            public Task Enter(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask;
+            public Task Exit(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask;
+
+            public bool Tick(PlayerUnit ctx, float dt, out CarState next)
+            {
+                next = CarState.Dead;
+                return false;
+            }
+        }
+        #endregion
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\Specifics\Projectile.cs ===
+using System;
+using Game.Client.Config;
+using Game.Client.Views;
+using Game.Core.Common;
+using Game.Core.Services;
+using Game.Core.Units;
+using UnityEngine;
+
+namespace Game.Client.Units
+{
+    public sealed class Projectile : ITickSystem, IHitHandler
+    {
+        private readonly ProjectileConfig _config;
+        private readonly ProjectileView _view;
+        private readonly Action<Projectile> _onExpire;
+        private readonly LayerMask _hitMask;
+        private readonly DamageService _damageService;
+        private readonly HitService _hitService;
+
+        private Unit _source;
+        private Unit _target;
+        private Vector3 _direction;
+        private float _lifeRemaining;
+
+        public Projectile(
+            ProjectileConfig config,
+            ProjectileView view,
+            LayerMask hitMask,
+            Action<Projectile> onExpire,
+            DamageService damageService,
+            HitService hitService)
+        {
+            _config = config;
+            _view = view;
+            _hitMask = hitMask;
+            _onExpire = onExpire;
+            _damageService = damageService;
+            _hitService = hitService;
+        }
+
+        public void Activate(Unit source, Unit target, Vector3 direction)
+        {
+            _source = source;
+            _target = target;
+            _direction = direction.normalized;
+            _lifeRemaining = _config.Lifetime;
+
+            _view.gameObject.SetActive(true);
+        }
+
+        public void Tick(float dt)
+        {
+            _lifeRemaining -= dt;
+            if (_lifeRemaining <= 0f)
+            {
+                Despawn();
+                return;
+            }
+
+            if (_target != null)
+            {
+                var toTarget = _target.Position - _view.transform.position;
+                if (toTarget.sqrMagnitude > 0.0001f)
+                    _direction = toTarget.normalized;
+            }
+
+            var origin = _view.transform.position;
+            var distance = _config.Speed * dt;
+            var query = new HitQuery(
+                HitQueryType.SphereCastXZ,
+                _source,
+                origin,
+                _direction,
+                distance,
+                _config.HitRadius,
+                _hitMask,
+                1);            
+
+            if (_hitService.ProcessFirst(query, this))
+            {
+                Despawn();
+                return;
+            }
+
+            var newPosition = origin + _direction * distance;
+            _view.transform.SetPositionAndRotation(newPosition, Quaternion.LookRotation(_direction));
+        }
+
+        public void Handle(Unit source, Unit target)
+        {
+            _damageService.Apply(new DamageRequest(source, target, _config.Damage, DamageSource.Projectile));
+        }
+
+        private void Despawn()
+        {
+            _view.gameObject.SetActive(false);
+            _onExpire?.Invoke(this);
+        }
+
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\Specifics\Turret.cs ===
+using System;
+using Game.Client.Config;
+using Game.Client.Input;
+using Game.Client.Views;
+using Game.Core.Common;
+using Game.Core.Services;
+using Game.Core.Session;
+using Game.Core.Units;
+using UnityEngine;
+
+namespace Game.Client.Units
+{
+    /// <summary>
+    /// Pure C# turret controller. Registered in TickSystemRegistry.
+    /// Handles yaw rotation and continuous fire while Fire input is held.
+    /// Aim computation and laser sight are delegated to TurretAimResolver.
+    /// </summary>
+    public sealed class Turret : ITickSystem, IDisposable
+    {
+        private readonly TurretView            _view;
+        private readonly TurretConfig          _config;
+        private readonly IHorizontalDragInput  _dragInput;
+        private readonly IFireInput            _fireInput;
+        private readonly GameSession           _session;
+        private readonly TickSystemRegistry    _tickRegistry;
+        private readonly ProjectileAttackSkill _attackSkill;
+        private readonly TurretAimResolver     _aimResolver;
+        private readonly float _initialYaw;
+
+        private float _fireTimer;
+        
+        public Turret(
+            Unit                 playerUnit,
+            TurretView           view,
+            TurretConfig         config,
+            IHorizontalDragInput dragInput,
+            IFireInput           fireInput,
+            GameSession          session,
+            TickSystemRegistry   tickRegistry,
+            ITargetsProvider     targetsProvider)
+        {
+            _view          = view;
+            _config        = config;
+            _dragInput     = dragInput;
+            _fireInput     = fireInput;
+            _session       = session;
+            _tickRegistry  = tickRegistry;
+            _fireTimer     = 0f;
+            _initialYaw    = view.transform.eulerAngles.y;
+            _aimResolver = new TurretAimResolver(view, config, playerUnit, targetsProvider);
+            _attackSkill = session.Player.Skills.Has<ProjectileAttackSkill>()
+                ? session.Player.Skills.Get<ProjectileAttackSkill>()
+                : null;
+            _tickRegistry.Register(this);
+        }
+        
+        public void Dispose()
+        {
+            _tickRegistry.Unregister(this);
+        }
+        
+        public void Tick(float dt)
+        {
+            // Aim + laser: update every frame, even while paused
+            _aimResolver.Update();
+
+            if (_session.IsPaused) return;
+            if (!_fireInput.IsPressed()) return;
+            
+            // --- Yaw rotation (only while Fire is held) ---
+            var dx = _dragInput.ReadDeltaX();
+            if (Mathf.Abs(dx) > 0.0001f)
+            {
+                _view.transform.Rotate(0f, dx * _config.RotateSpeed * dt, 0f, Space.World);
+                if (_config.RotationLimit > 0f)
+                {
+                    var delta = Mathf.DeltaAngle(_initialYaw, _view.transform.eulerAngles.y);
+                    delta = Mathf.Clamp(delta, -_config.RotationLimit, _config.RotationLimit);
+                    var euler = _view.transform.eulerAngles;
+                    euler.y = _initialYaw + delta;
+                    _view.transform.eulerAngles = euler;
+                }
+            }
+            // --- Continuous fire with cooldown ---
+            _fireTimer -= dt;
+            if (_fireTimer <= 0f)
+            {
+                _fireTimer = _config.FireCooldown;
+                var context = new AttackContext(_session.Player, _view.Muzzle.position,
+                    _aimResolver.FireDirection, _session.Player.TargetMask, null);
+                _attackSkill?.Use(context);
+            }
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Units\Specifics\TurretAimResolver.cs ===
+using Game.Client.Config;
+using Game.Client.Views;
+using Game.Core.Services;
+using Game.Core.Units;
+using UnityEngine;
+using UnityEngine.Rendering;
+
+namespace Game.Client.Units
+{
+    /// <summary>
+    /// Responsible for computing the turret aim point/direction and
+    /// rendering the laser sight line.
+    /// Extracted from Turret to keep concerns separate.
+    /// </summary>
+    public sealed class TurretAimResolver
+    {
+        private readonly TurretView       _view;
+        private readonly TurretConfig     _config;
+        private readonly Unit             _playerUnit;
+        private readonly ITargetsProvider _targetsProvider;
+
+        private LineRenderer    _aimLine;
+        private readonly Unit[] _aimBuffer = new Unit[8];
+
+        /// <summary>Visual end-point of the laser (world space).</summary>
+        public Vector3 AimPoint      { get; private set; }
+
+        /// <summary>Direction used when firing a projectile (Y-corrected toward enemy center).</summary>
+        public Vector3 FireDirection { get; private set; }
+
+        /// <summary>True when the laser is locked onto an enemy.</summary>
+        public bool    HasAimTarget  { get; private set; }
+
+        private static readonly Color ColorOnTarget  = new Color(1f, 0.15f, 0.15f, 1f);
+        private static readonly Color ColorSearching = new Color(1f, 0.85f, 0f,   0.7f);
+
+        public TurretAimResolver(
+            TurretView       view,
+            TurretConfig     config,
+            Unit             playerUnit,
+            ITargetsProvider targetsProvider)
+        {
+            _view            = view;
+            _config          = config;
+            _playerUnit      = playerUnit;
+            _targetsProvider = targetsProvider;
+            SetupAimLine();
+        }
+
+        // ------------------------------------------------------------------ public
+
+        /// <summary>Recompute aim and refresh the laser line. Call once per frame.</summary>
+        public void Update()
+        {
+            UpdateAim();
+            UpdateAimLine();
+        }
+
+        // ------------------------------------------------------------------ private
+
+        private void SetupAimLine()
+        {
+            _aimLine = _view.gameObject.GetComponent<LineRenderer>()
+                       ?? _view.gameObject.AddComponent<LineRenderer>();
+
+            _aimLine.positionCount     = 2;
+            _aimLine.useWorldSpace     = true;
+            _aimLine.startWidth        = 0.06f;
+            _aimLine.endWidth          = 0.02f;
+            _aimLine.shadowCastingMode = ShadowCastingMode.Off;
+            _aimLine.receiveShadows    = false;
+            _aimLine.textureMode       = LineTextureMode.Tile;
+
+            if (_aimLine.sharedMaterial == null || _aimLine.sharedMaterial.name == "Default-Line")
+                _aimLine.material = new Material(Shader.Find("Sprites/Default"));
+        }
+
+        private void UpdateAim()
+        {
+            var muzzlePos = _view.Muzzle.position;
+            var flatForward = _view.transform.forward;
+            flatForward.y = 0f;
+
+            if (flatForward.sqrMagnitude < 0.0001f)
+                flatForward = Vector3.forward;
+            else
+                flatForward.Normalize();
+
+            var query = new HitQuery(
+                HitQueryType.SphereCastXZ,
+                _playerUnit,
+                muzzlePos,
+                flatForward,
+                _config.AimRange,
+                _config.AimRadius,
+                _playerUnit.TargetMask,
+                _aimBuffer.Length);
+
+            var count = _targetsProvider.Collect(query, _aimBuffer);
+
+            var target = SelectBestAimTarget(
+                origin:      muzzlePos,
+                flatForward: flatForward,
+                targets:     _aimBuffer,
+                count:       count);
+
+            HasAimTarget = target != null;
+
+            if (target != null)
+            {
+                var targetPoint = AimPointUtility.Resolve(target);
+                AimPoint = _config.LockOnTarget
+                    ? targetPoint
+                    : muzzlePos + flatForward * _config.AimRange;
+                
+                FireDirection = (targetPoint - muzzlePos).normalized;
+            }
+            else
+            {
+                AimPoint      = GetFallbackAimPoint(muzzlePos, flatForward);
+                FireDirection = flatForward;
+            }
+
+            ClearAimBuffer(count);
+        }
+
+        private Unit SelectBestAimTarget(
+            Vector3 origin,
+            Vector3 flatForward,
+            Unit[]  targets,
+            int     count)
+        {
+            Unit  best                = null;
+            var bestForwardDistance = float.MaxValue;
+            var bestLateralSqr     = float.MaxValue;
+
+            for (var i = 0; i < count; i++)
+            {
+                var unit = targets[i];
+                if (unit == null)
+                    continue;
+
+                var toTarget = unit.Position - origin;
+                toTarget.y = 0f;
+
+                var forwardDistance = Vector3.Dot(flatForward, toTarget);
+                if (forwardDistance < 0f)
+                    continue;
+
+                var projected = flatForward * forwardDistance;
+                var lateralSqr = (toTarget - projected).sqrMagnitude;
+
+                var isBetter = lateralSqr < bestLateralSqr - 0.0001f ||
+                               (Mathf.Abs(lateralSqr - bestLateralSqr) < 0.0001f &&
+                                forwardDistance < bestForwardDistance);
+
+                if (!isBetter) continue;
+
+                best = unit;
+                bestForwardDistance = forwardDistance;
+                bestLateralSqr = lateralSqr;
+            }
+
+            return best;
+        }
+
+        private Vector3 GetFallbackAimPoint(Vector3 muzzlePosition, Vector3 flatForward)
+        {
+            Vector3 point = muzzlePosition + flatForward * _config.AimRange;
+            point.y = _config.FallbackAimY;
+            return point;
+        }
+
+        private void UpdateAimLine()
+        {
+            _aimLine.enabled = true;
+            _aimLine.SetPosition(0, _view.Muzzle.position);
+            _aimLine.SetPosition(1, AimPoint);
+
+            var color = HasAimTarget ? ColorOnTarget : ColorSearching;
+            _aimLine.startColor = color;
+            _aimLine.endColor   = new Color(color.r, color.g, color.b, 0f);
+        }
+
+        private void ClearAimBuffer(int count)
+        {
+            for (var i = 0; i < count; i++)
+                _aimBuffer[i] = null;
+        }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Views\BaseView.cs ===
+using UnityEngine;
+
+namespace Game.Client.Views
+{
+    public abstract class BaseView : MonoBehaviour
+    {
+        public GameObject RootGameObject => gameObject;
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Views\IView.cs ===
+using UnityEngine;
+
+namespace Game.Client.Views
+{
+    public interface IView
+    {
+        GameObject RootGameObject { get; }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Views\UnitColliderLink.cs ===
+using Game.Core.Services;
+using Game.Core.Units;
+using VContainer;
+using UnityEngine;
+
+namespace Game.Client.Views
+{
+    public sealed class UnitColliderLink : MonoBehaviour
+    {
+        [SerializeField] private Collider unitCollider;
+
+        private IUnitRegistry _unitRegistry;
+
+        [Inject]
+        private void Inject(IUnitRegistry unitRegistry)
+        {
+            _unitRegistry = unitRegistry;
+        }
+
+        public void Bind(Unit unit)
+        {
+            _unitRegistry.Register(unitCollider, unit);
+        }
+
+        public void Unbind()
+        {
+            _unitRegistry.Unregister(unitCollider);
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Views\Specifics\BulletTrailEffect.cs ===
+using UnityEngine;
+
+namespace Game.Client.Views
+{
+    [RequireComponent(typeof(TrailRenderer))]
+    public sealed class BulletTrailEffect : MonoBehaviour
+    {
+        private TrailRenderer  _trail;
+        private ParticleSystem _glow;
+
+        private void Awake()
+        {
+            _trail = GetComponent<TrailRenderer>();
+            _glow = GetComponentInChildren<ParticleSystem>();
+        }
+
+        /// <summary>РЎР±СЂРѕСЃ С€Р»РµР№С„Р° РїСЂРё РїРµСЂРµРёСЃРїРѕР»СЊР·РѕРІР°РЅРёРё РёР· РїСѓР»Р°.</summary>
+        private void OnEnable()
+        {
+            _trail?.Clear();
+            _glow?.Play(true);
+        }
+
+        private void OnDisable()
+        {
+            _trail?.Clear();
+            _glow?.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Views\Specifics\CarView.cs ===
+using UnityEngine;
+
+namespace Game.Client.Views
+{
+    /// <summary>
+    /// MonoBehaviour host for PlayerUnit.
+    /// Visual feedback methods live here; logic lives in PlayerUnit.
+    /// PlayerUnit is ticked via TickSystemRegistry вЂ” no Update() needed.
+    /// </summary>
+    public sealed class CarView : BaseView
+    {
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Views\Specifics\EnemyView.cs ===
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using Game.Client.Vfx;
+using Game.Core;
+using UnityEngine;
+using VContainer;
+
+namespace Game.Client.Views
+{
+    public sealed class EnemyView : BaseView
+    {
+        private static readonly int StateHash = Animator.StringToHash("State");
+
+        [SerializeField] private Animator animator;
+        [SerializeField] private Transform vfxRoot;
+        [SerializeField] private Transform aimPoint;
+
+        [Inject] private VfxManager _vfxManager;
+        
+        public Animator Animator => animator;
+        public Transform AimPoint  => aimPoint;
+
+        public void SetAnimationState(EnemyState state) => animator?.SetInteger(StateHash, (int)state);
+
+        public void PlayVfx(string vfxId)
+        {
+            _vfxManager.Play(vfxId, vfxRoot.position, vfxRoot.rotation);
+        }
+        
+        /// <summary>
+        /// РћР¶РёРґР°РµС‚ РїРѕР»РЅРѕРіРѕ РїСЂРѕРёРіСЂС‹РІР°РЅРёСЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ Р°РЅРёРјР°С‚РѕСЂР°.
+        /// РЎРЅР°С‡Р°Р»Р° Р¶РґС‘С‚, РїРѕРєР° Р°РЅРёРјР°С‚РѕСЂ РІРѕР№РґС‘С‚ РІ РѕР¶РёРґР°РµРјРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ Рё РІС‹Р№РґРµС‚ РёР· transition
+        /// (Р·Р°С‰РёС‚Р° РѕС‚ looping-СЃРѕСЃС‚РѕСЏРЅРёР№ С‚РёРїР° Idle/Chase, Сѓ РєРѕС‚РѕСЂС‹С… normalizedTime СѓР¶Рµ > 1),
+        /// Р·Р°С‚РµРј Р¶РґС‘С‚ normalizedTime >= 1f.
+        /// </summary>
+        public async UniTask WaitForStateComplete(EnemyState expectedState, CancellationToken ct = default)
+        {
+            if (animator == null) return;
+
+            // Р–РґС‘Рј, РїРѕРєР° Р°РЅРёРјР°С‚РѕСЂ РїРµСЂРµР№РґС‘С‚ РІ РЅСѓР¶РЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ Рё Р·Р°РІРµСЂС€РёС‚ transition
+            await UniTask.WaitUntil(
+                () => !animator.IsInTransition(0) && animator.GetCurrentAnimatorStateInfo(0).IsName(expectedState.ToString()),
+                cancellationToken: ct);
+
+            // РўРµРїРµСЂСЊ С‡РёС‚Р°РµРј normalizedTime СѓР¶Рµ С‚РѕР»СЊРєРѕ РЅСѓР¶РЅРѕРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ
+            await UniTask.WaitUntil(
+                () => !animator.IsInTransition(0) && animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f,
+                cancellationToken: ct);
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Views\Specifics\ProjectileView.cs ===
+using UnityEngine;
+
+namespace Game.Client.Views
+{
+    public sealed class ProjectileView : BaseView
+    {
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Client\Views\Specifics\TurretView.cs ===
+using UnityEngine;
+
+namespace Game.Client.Views
+{
+    /// <summary>
+    /// MonoBehaviour-С…РѕСЃС‚ Р±Р°С€С‚Рё.
+    /// РњС–СЃС‚РёС‚СЊ РїРѕСЃРёР»Р°РЅРЅСЏ РЅР° РґСѓР»Рѕ (Muzzle), Р· СЏРєРѕРіРѕ РІРёР»С–С‚Р°СЋС‚СЊ СЃРЅР°СЂСЏРґРё С‚Р° РїРѕС‡РёРЅР°С”С‚СЊСЃСЏ Р»Р°Р·РµСЂРЅРёР№ РїСЂРёС†С–Р».
+    /// </summary>
+    public sealed class TurretView : BaseView
+    {
+        [SerializeField] private Transform muzzle;
+
+        public Transform Muzzle => muzzle;
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Core\IsExternalInit.cs ===
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit {}
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Common\CarState.cs ===
+namespace Game.Core
+{
+    public enum CarState { Driving, Dead }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Common\EnemyState.cs ===
+namespace Game.Core
+{
+    public enum EnemyState { Idle, Wander, Chase, Attack, Dead, DeadByProjectile, DeadByRam }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Common\GameState.cs ===
+namespace Game.Core
+{
+    public enum GameState { WaitingToStart, Playing, Win, Lose }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Common\ITickSystem.cs ===
+namespace Game.Core.Common
+{
+    /// <summary>
+    /// РЎРёСЃС‚РµРјР°, СЏРєР° РІРёРєРѕРЅСѓС” РѕРЅРѕРІР»РµРЅРЅСЏ РєРѕР¶РЅРѕРіРѕ РєР°РґСЂСѓ Р°Р±Рѕ Р· РїРµРІРЅРёРј С–РЅС‚РµСЂРІР°Р»РѕРј С‡Р°СЃСѓ.
+    /// </summary>
+    public interface ITickSystem
+    {
+        void Tick(float dt);
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Common\PrefabPool.cs ===
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+namespace Game.Core.Common
+{
+    /// <summary>
+    /// Generic prefab-based object pool with active-instance tracking.
+    /// Supports multiple different prefabs of the same type simultaneously.
+    /// Call Dispose() at session end to destroy all pooled GameObjects.
+    /// </summary>
+    public sealed class PrefabPool<TView> : IDisposable where TView : MonoBehaviour
+    {
+        // Per-prefab stack of free instances
+        private readonly Dictionary<TView, Stack<TView>> _free     = new();
+        // Maps each instance back to the prefab it was created from
+        private readonly Dictionary<TView, TView>        _prefabOf = new();
+        private readonly List<TView>                     _active   = new();
+        private readonly Func<TView, Transform, TView> _factoryMethod;
+        private readonly Transform _parent;
+
+        public IReadOnlyList<TView> Active     => _active;
+        public int                  ActiveCount => _active.Count;
+
+        /// <summary>Creates a new instance from a prefab under the given parent. Position/rotation are applied by the pool afterwards.</summary>
+        public PrefabPool(Func<TView, Transform, TView> factoryMethod, Transform parent)
+        {
+            _factoryMethod = factoryMethod;
+            _parent        = parent;
+        }
+        
+        
+        /// <summary>Take an instance from the pool (or instantiate a new one).</summary>
+        public TView Get(TView prefab, Vector3 position, Quaternion rotation)
+        {
+            if (!_free.TryGetValue(prefab, out var stack))
+            {
+                stack = new Stack<TView>();
+                _free[prefab] = stack;
+            }
+
+            TView view;
+            if (stack.Count > 0)
+            {
+                view = stack.Pop();
+                view.transform.SetPositionAndRotation(position, rotation);
+                view.gameObject.SetActive(true);
+            }
+            else
+            {
+                view = _factoryMethod(prefab, _parent);
+                view.name = $"{prefab.name}_{_active.Count}"; 
+                view.transform.SetPositionAndRotation(position, rotation);
+                _prefabOf[view] = prefab;
+            }
+
+            _active.Add(view);
+            return view;
+        }
+
+        /// <summary>Return an instance to the pool (deactivates its GameObject).</summary>
+        public void Return(TView view)
+        {
+            if (view == null) return;
+
+            _active.Remove(view);
+            view.gameObject.SetActive(false);
+
+            if (_prefabOf.TryGetValue(view, out var prefab) && _free.TryGetValue(prefab, out var stack))
+                stack.Push(view);
+            else
+                UnityEngine.Object.Destroy(view.gameObject); // fallback for leaked instances
+        }
+
+        /// <summary>Destroy all pooled GameObjects.</summary>
+        public void Dispose()
+        {
+            foreach (var view in _active.Where(view => view != null))
+                UnityEngine.Object.Destroy(view.gameObject);
+
+            _active.Clear();
+
+            foreach (var view in _free.Values.SelectMany(stack => stack.Where(view => view != null)))
+                UnityEngine.Object.Destroy(view.gameObject);
+
+            _free.Clear();
+            _prefabOf.Clear();
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Common\TickSystemRegistry.cs ===
+using System.Collections.Generic;
+
+namespace Game.Core.Common
+{
+    /// <summary>
+    /// Registers ITickSystem implementations and drives their Tick() call each frame.
+    /// Supports safe Register/Unregister from within a Tick (deferred apply).
+    /// </summary>
+    public sealed class TickSystemRegistry
+    {
+        private readonly List<ITickSystem> _systems       = new();
+        private readonly List<ITickSystem> _pendingAdd    = new();
+        private readonly List<ITickSystem> _pendingRemove = new();
+
+        private bool _isTicking;
+
+        public void Register(ITickSystem system)
+        {
+            if (_isTicking)
+                _pendingAdd.Add(system);
+            else
+                _systems.Add(system);
+        }
+
+        public void Unregister(ITickSystem system)
+        {
+            if (_isTicking)
+                _pendingRemove.Add(system);
+            else
+                _systems.Remove(system);
+        }
+
+        /// <summary>Tick all registered systems then apply deferred adds/removes.</summary>
+        public void Tick(float dt)
+        {
+            _isTicking = true;
+            foreach (var t in _systems)
+                t.Tick(dt);
+
+            _isTicking = false;
+
+            // Apply deferred removes first to avoid stale references
+            foreach (var t in _pendingRemove)
+                _systems.Remove(t);
+
+            _pendingRemove.Clear();
+
+            foreach (var t in _pendingAdd)
+                _systems.Add(t);
+
+            _pendingAdd.Clear();
+        }
+
+        /// <summary>Remove all registrations (call on session end).</summary>
+        public void Clear()
+        {
+            _systems.Clear();
+            _pendingAdd.Clear();
+            _pendingRemove.Clear();
+        }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\DamageRequest.cs ===
+using Game.Core.Units;
+
+namespace Game.Core.Services
+{
+    public readonly struct DamageRequest
+    {
+        public Unit         Source       { get; }
+        public Unit         Target       { get; }
+        public int          Amount       { get; }
+        public DamageSource DamageSource { get; }
+
+        public DamageRequest(Unit source, Unit target, int amount, DamageSource damageSource = DamageSource.Unknown)
+        {
+            Source       = source;
+            Target       = target;
+            Amount       = amount;
+            DamageSource = damageSource;
+        }
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\DamageService.cs ===
+using System;
+using FTg.Common.Observables;
+using Game.Core.Units;
+
+namespace Game.Core.Services
+{
+    /// <summary>
+    /// Central damage manager. All damage must flow through here вЂ”
+    /// single point for future modifiers (armour, invincibility, logging, etc.).
+    /// </summary>
+    public sealed class DamageService
+    {
+        private readonly ObservableEvent<(Unit unit, int damage)>            _damageApplied = new();
+        private readonly ObservableEvent<(Unit unit, DamageSource source)>   _died          = new();
+
+        public IObservable<(Unit unit, int damage)>           DamageApplied => _damageApplied;
+        public IObservable<(Unit unit, DamageSource source)>  Died          => _died;
+
+        public void Apply(DamageRequest request)
+        {
+            if (request.Target == null) return;
+            if (!request.Target.Stats.Has<HpStat>()) return;
+
+            int finalDamage = request.Amount;
+
+            // РїРѕР·Р¶Рµ Р·РґРµСЃСЊ РјРѕР¶РЅРѕ СѓС‡РµСЃС‚СЊ armor, shield, buffs Рё С‚.Рґ.
+
+            var hp = request.Target.Stats.Get<HpStat>();
+            hp.Apply(-finalDamage);
+
+            _damageApplied.Raise((request.Target, finalDamage));
+
+            if (!hp.IsAlive)
+                _died.Raise((request.Target, request.DamageSource));
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\DamageSource.cs ===
+namespace Game.Core.Services
+{
+    /// <summary>
+    /// Identifies the source/type of damage that caused the hit or kill.
+    /// Used to select different death animations on the receiving unit.
+    /// </summary>
+    public enum DamageSource
+    {
+        Unknown,
+        Projectile,
+        Ram,
+        Melee,
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\GameFlowService.cs ===
+using System.Threading;
+using System.Threading.Tasks;
+using Game.Core.Common.Fsm;
+using Game.Core.Session;
+using Game.Core.Units;
+
+namespace Game.Core.Services
+{
+    public sealed class GameFlowService
+    {
+        private readonly GameSession        _session;
+        private readonly SessionCoordinator _coordinator;
+        private readonly float              _levelLength;
+
+        private bool _tapRequested;
+
+        private readonly StateMachine<GameFlowService, GameState> _fsm;
+
+        public GameFlowService(float levelLength, GameSession session, SessionCoordinator coordinator)
+        {
+            _levelLength = levelLength;
+            _session     = session;
+            _coordinator = coordinator;
+
+            _fsm = new StateMachine<GameFlowService, GameState>(this)
+                .Add(new WaitingToStartState())
+                .Add(new PlayingState())
+                .Add(new WinState())
+                .Add(new LoseState());
+
+            _fsm.Start(GameState.WaitingToStart);
+        }
+
+        public void RegisterTap() => _tapRequested = true;
+
+        public void Tick(float dt)
+        {
+            _fsm.Tick(dt);
+            _tapRequested = false;
+        }
+
+        // ------------------------------------------------------------------ states
+
+        private sealed class WaitingToStartState : IState<GameFlowService, GameState>
+        {
+            public GameState Id => GameState.WaitingToStart;
+            public Task Enter(GameFlowService ctx, CancellationToken ct)
+            {
+                ctx._session.Pause();
+                return Task.CompletedTask;
+            }
+
+            public Task Exit(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
+
+            public bool Tick(GameFlowService ctx, float dt, out GameState next)
+            {
+                if (!ctx._tapRequested)
+                {
+                    next = GameState.WaitingToStart; return false;
+                }
+                next = GameState.Playing;
+                return true;
+            }
+        }
+
+        private sealed class PlayingState : IState<GameFlowService, GameState>
+        {
+            public GameState Id => GameState.Playing;
+
+            public Task Enter(GameFlowService ctx, CancellationToken ct)
+            {
+                ctx._session.Begin();
+                return Task.CompletedTask;
+            }
+
+            public Task Exit(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
+
+            public bool Tick(GameFlowService ctx, float dt, out GameState next)
+            {
+                var player = ctx._session.Player;
+                if (player == null) { next = GameState.Playing; return false; }
+
+                if (!player.Stats.Get<HpStat>().IsAlive)
+                {
+                    next = GameState.Lose;
+                    return true;
+                }
+
+                if (ctx._session.Player.Position.z >= ctx._session.StartPositionZ + ctx._levelLength)
+                {
+                    next = GameState.Win;
+                    return true;
+                }
+
+                next = GameState.Playing;
+                return false;
+            }
+        }
+
+        private sealed class WinState : IState<GameFlowService, GameState>
+        {
+            public GameState Id => GameState.Win;
+
+            public Task Enter(GameFlowService ctx, CancellationToken ct)
+            {
+                ctx._session.FinishWin();
+                return Task.CompletedTask;
+            }
+
+            public Task Exit(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
+
+            public bool Tick(GameFlowService ctx, float dt, out GameState next)
+            {
+                if (ctx._tapRequested) ctx._coordinator.RequestRestart();
+                next = GameState.Win;
+                return false;
+            }
+        }
+
+        private sealed class LoseState : IState<GameFlowService, GameState>
+        {
+            public GameState Id => GameState.Lose;
+
+            public Task Enter(GameFlowService ctx, CancellationToken ct)
+            {
+                ctx._session.FinishLose();
+                return Task.CompletedTask;
+            }
+
+            public Task Exit(GameFlowService ctx, CancellationToken ct) => Task.CompletedTask;
+
+            public bool Tick(GameFlowService ctx, float dt, out GameState next)
+            {
+                if (ctx._tapRequested) ctx._coordinator.RequestRestart();
+                next = GameState.Lose;
+                return false;
+            }
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\GameStatistics.cs ===
+using System;
+using FTg.Common.Observables;
+
+namespace Game.Core.Services
+{
+    public sealed class GameStatistics
+    {
+        public IObservable<int> OnEnemyKilled => _onEnemyKilled;
+        public int KillCount => _killCount;
+
+        private int _killCount;
+        private readonly ObservableEvent<int> _onEnemyKilled = new();
+
+        public int LiveCount { get; private set; }
+        public float LevelLength { get; private set; }
+
+        public void Reset(float levelLength)
+        {
+            LiveCount = 0;
+            _killCount = 0;
+            _onEnemyKilled.Raise(_killCount);
+            LevelLength = levelLength;
+        }
+        
+        public void TrackSpawn() => LiveCount++;
+
+        public void ReportKill()
+        {
+            LiveCount--;
+            _onEnemyKilled.Raise(++_killCount);
+        }
+
+        public void TrackRelease() => LiveCount--;
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\IHitHandler.cs ===
+using Game.Core.Units;
+
+namespace Game.Core.Services
+{
+    public interface IHitHandler
+    {
+        void Handle(Unit source, Unit target);
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\ITargetsProvider.cs ===
+using Game.Core.Units;
+using UnityEngine;
+
+namespace Game.Core.Services
+{
+    public interface ITargetsProvider
+    {
+        int Collect(in HitQuery query, Unit[] results);
+    }
+    
+    public enum HitQueryType
+    {
+        Ray,
+        SphereCast,
+        SphereCastXZ,
+        OverlapSphere,
+        OverlapCapsule
+    }
+
+    public record HitQuery(
+        HitQueryType Type,
+        Unit Source,
+        Vector3 Origin,
+        Vector3 Direction,
+        float Distance,
+        float Radius,
+        LayerMask HitMask,
+        int MaxTargets = 16,
+        Vector3 CapsulePoint1 = default,
+        Vector3 CapsulePoint2 = default);
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\IUnitRegistry.cs ===
+using Game.Core.Units;
+using UnityEngine;
+
+namespace Game.Core.Services
+{
+    public interface IUnitRegistry
+    {
+        void Register(Collider collider, Unit unit);
+        void Unregister(Collider collider);
+        bool TryGet(Collider collider, out Unit unit);
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\Specifics\HitService.cs ===
+using Game.Core.Units;
+
+namespace Game.Core.Services
+{
+    public sealed class HitService
+    {
+        private readonly ITargetsProvider _targetsProvider;
+        private readonly Unit[] _targetsBuffer = new Unit[16];
+
+        public HitService(ITargetsProvider targetsProvider)
+        {
+            _targetsProvider = targetsProvider;
+        }
+
+        public int Process(in HitQuery query, IHitHandler handler)
+        {
+            var count = _targetsProvider.Collect(query, _targetsBuffer);
+
+            for (var i = 0; i < count; i++)
+            {
+                handler.Handle(query.Source, _targetsBuffer[i]);
+                _targetsBuffer[i] = null;
+            }
+
+            return count;
+        }
+
+        public bool ProcessFirst(in HitQuery query, IHitHandler handler)
+        {
+            var count = _targetsProvider.Collect(query, _targetsBuffer);
+            if (count <= 0)
+                return false;
+
+            handler.Handle(query.Source, _targetsBuffer[0]);
+            _targetsBuffer[0] = null;
+
+            for (int i = 1; i < count; i++)
+                _targetsBuffer[i] = null;
+
+            return true;
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\Specifics\TargetsProvider.cs ===
+using Game.Core.Units;
+using UnityEngine;
+
+namespace Game.Core.Services
+{
+    public sealed class TargetsProvider : ITargetsProvider
+    {
+        private readonly IUnitRegistry _unitRegistry;
+
+        private readonly RaycastHit[] _raycastBuffer = new RaycastHit[16];
+        private readonly Collider[] _overlapBuffer = new Collider[32];
+
+        public TargetsProvider(IUnitRegistry unitRegistry)
+        {
+            _unitRegistry = unitRegistry;
+        }
+
+        public int Collect(in HitQuery query, Unit[] results)
+        {
+            return query.Type switch
+            {
+                HitQueryType.Ray => CollectRay(query, results),
+                HitQueryType.SphereCast => CollectSphereCast(query, results),
+                HitQueryType.SphereCastXZ => CollectSphereCastXZ(query, results),
+                HitQueryType.OverlapSphere => CollectOverlapSphere(query, results),
+                HitQueryType.OverlapCapsule => CollectOverlapCapsule(query, results),
+                
+                _ => 0
+            };
+        }
+
+        private int CollectRay(in HitQuery query, Unit[] results)
+        {
+            var hitCount = Physics.RaycastNonAlloc(
+                query.Origin, query.Direction,
+                _raycastBuffer,
+                query.Distance, query.HitMask);
+
+            return CollectUnitsFromRayHits(query.Source, _raycastBuffer, hitCount, results, query.MaxTargets);
+        }
+
+        private int CollectSphereCast(in HitQuery query, Unit[] results)
+        {
+            var hitCount = Physics.SphereCastNonAlloc(
+                query.Origin, query.Radius, query.Direction,
+                _raycastBuffer,
+                query.Distance, query.HitMask);
+
+            return CollectUnitsFromRayHits(query.Source, _raycastBuffer, hitCount, results, query.MaxTargets);
+        }
+
+        // РџСЂРѕРІРµСЂРєР° СЃС‚РѕР»РєРЅРѕРІРµРЅРёР№ Р±РµР· СѓС‡С‘С‚Р° Y: origin Рё direction РїСЂРѕРµС†РёСЂСѓСЋС‚СЃСЏ РЅР° РїР»РѕСЃРєРѕСЃС‚СЊ XZ.
+        // РЎС„РµСЂРёС‡РµСЃРєРёР№ РєР°СЃС‚ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РІ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ РїР»РѕСЃРєРѕСЃС‚Рё (Y = 0),
+        // РїРѕСЌС‚РѕРјСѓ РІС‹СЃРѕС‚Р° СЃРЅР°СЂСЏРґР° Рё РІСЂР°РіР° РЅРµ РІР»РёСЏСЋС‚ РЅР° СЂРµР·СѓР»СЊС‚Р°С‚.
+        private int CollectSphereCastXZ(in HitQuery query, Unit[] results)
+        {
+            var flatOrigin = new Vector3(query.Origin.x, 0f, query.Origin.z);
+            var flatDir = new Vector3(query.Direction.x, 0f, query.Direction.z);
+            if (flatDir.sqrMagnitude > 0f)
+                flatDir.Normalize();
+
+            var hitCount = Physics.SphereCastNonAlloc(
+                flatOrigin, query.Radius, flatDir,
+                _raycastBuffer,
+                query.Distance, query.HitMask);
+
+            return CollectUnitsFromRayHits(query.Source, _raycastBuffer, hitCount, results, query.MaxTargets);
+        }
+
+        private int CollectOverlapSphere(in HitQuery query, Unit[] results)
+        {
+            var hitCount = Physics.OverlapSphereNonAlloc(
+                query.Origin, query.Radius,
+                _overlapBuffer,
+                query.HitMask);
+
+            return CollectUnitsFromColliders(query.Source, _overlapBuffer, hitCount, results, query.MaxTargets);
+        }
+
+        private int CollectOverlapCapsule(in HitQuery query, Unit[] results)
+        {
+            var hitCount = Physics.OverlapCapsuleNonAlloc(
+                query.CapsulePoint1, query.CapsulePoint2, query.Radius,
+                _overlapBuffer,
+                query.HitMask);
+
+            return CollectUnitsFromColliders(query.Source, _overlapBuffer, hitCount, results, query.MaxTargets);
+        }
+
+        private int CollectUnitsFromRayHits(
+            Unit source,
+            RaycastHit[] hits,
+            int hitCount,
+            Unit[] results,
+            int maxTargets)
+        {
+            var resultCount = 0;
+
+            for (var i = 0; i < hitCount; i++)
+            {
+                var collider = hits[i].collider;
+                if (!_unitRegistry.TryGet(collider, out var unit))
+                    continue;
+
+                if (unit == null || unit == source) continue;
+
+                if (Contains(results, resultCount, unit)) continue;
+
+                if (resultCount >= results.Length || resultCount >= maxTargets) break;
+
+                results[resultCount++] = unit;
+            }
+            return resultCount;
+        }
+
+        private int CollectUnitsFromColliders(
+            Unit source,
+            Collider[] colliders,
+            int hitCount,
+            Unit[] results,
+            int maxTargets)
+        {
+            var resultCount = 0;
+
+            for (var i = 0; i < hitCount; i++)
+            {
+                var collider = colliders[i];
+                if (!_unitRegistry.TryGet(collider, out Unit unit))
+                    continue;
+
+                if (unit == null || unit == source) continue;
+
+                if (Contains(results, resultCount, unit)) continue;
+
+                if (resultCount >= results.Length || resultCount >= maxTargets)
+                    break;
+
+                results[resultCount++] = unit;
+            }
+
+            return resultCount;
+        }
+
+        private static bool Contains(Unit[] results, int count, Unit unit)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                if (ReferenceEquals(results[i], unit))
+                    return true;
+            }
+            return false;
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Services\Specifics\UnitRegistry.cs ===
+using System.Collections.Generic;
+using Game.Core.Units;
+using UnityEngine;
+
+namespace Game.Core.Services
+{
+    public sealed class UnitRegistry: IUnitRegistry
+    {
+        private readonly Dictionary<Collider, Unit> _unitsByCollider = new();
+
+        public void Register(Collider collider, Unit unit)
+        {
+            _unitsByCollider[collider] = unit;
+        }
+
+        public void Unregister(Collider collider)
+        {
+            _unitsByCollider.Remove(collider);
+        }
+
+        public bool TryGet(Collider collider, out Unit unit)
+        {
+            return _unitsByCollider.TryGetValue(collider, out unit);
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Session\GameSession.cs ===
+using System;
+using FTg.Common.Observables;
+using Game.Core.Services;
+using Game.Core.Units;
+
+namespace Game.Core.Session
+{
+    /// <summary>
+    /// Holds per-session state: events bus, game state, player unit reference, pause flag.
+    /// Lifecycle methods are the only authoritative way to change state from outside.
+    /// </summary>
+    public sealed class GameSession
+    {
+        public GameState  State           { get; private set; } = GameState.WaitingToStart;
+        public IObservable<GameState> GameStateChanged => _gameStateChanged;
+
+        public GameStatistics GameStatistics { get; private set; } 
+        public bool       IsPaused        { get; private set; } = true;
+        public Unit       Player          { get; private set; }
+        public float      StartPositionZ  { get; private set; }
+
+        private readonly ObservableEvent<GameState> _gameStateChanged = new();
+
+        public GameSession(GameStatistics gameStatistics)
+        {
+            GameStatistics = gameStatistics;
+        }
+        
+
+        /// <summary>Called once by GameSessionBuilder after the player unit is ready.</summary>
+        public void Initialize(Unit player)
+        {
+            Player         = player;
+            StartPositionZ = player.Position.z;
+        }
+
+        // ------------------------------------------------------------------ lifecycle
+
+        /// <summary>РќР°С‡Р°С‚СЊ СЃРµСЃСЃРёСЋ: СЃРЅСЏС‚СЊ РїР°СѓР·Сѓ Рё РїРµСЂРµР№С‚Рё РІ Playing.</summary>
+        public void Begin()
+        {
+            IsPaused = false;
+            SetState(GameState.Playing);
+        }
+
+        /// <summary>РџРѕСЃС‚Р°РІРёС‚СЊ РЅР° РїР°СѓР·Сѓ Р±РµР· РёР·РјРµРЅРµРЅРёСЏ GameState.</summary>
+        public void Pause() => IsPaused = true;
+
+        /// <summary>РЎРЅСЏС‚СЊ РїР°СѓР·Сѓ Р±РµР· РёР·РјРµРЅРµРЅРёСЏ GameState.</summary>
+        public void Resume() => IsPaused = false;
+
+        /// <summary>Р—Р°РІРµСЂС€РёС‚СЊ РїРѕР±РµРґРѕР№: РїР°СѓР·Р° + Win.</summary>
+        public void FinishWin()
+        {
+            IsPaused = true;
+            SetState(GameState.Win);
+        }
+
+        /// <summary>Р—Р°РІРµСЂС€РёС‚СЊ РїРѕСЂР°Р¶РµРЅРёРµРј: РїР°СѓР·Р° + Lose.</summary>
+        public void FinishLose()
+        {
+            IsPaused = true;
+            SetState(GameState.Lose);
+        }
+
+        /// <summary>Changes state and fires GameStateChanged event.</summary>
+        public void SetState(GameState newState)
+        {
+            State = newState;
+            _gameStateChanged.Raise(newState);
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Session\ISessionBuilder.cs ===
+using Game.Core.Common;
+
+namespace Game.Core.Session
+{
+    /// <summary>
+    /// Р¤Р°Р±СЂРёРєР° СЃРµСЃСЃРёР№. Р РµР°Р»РёР·СѓРµС‚СЃСЏ GameSessionBuilder РІ Client.
+    /// </summary>
+    public interface ISessionBuilder
+    {
+        ISessionRunner NewSessionRunner();
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Session\ISessionRunner.cs ===
+using Game.Core.Common;
+
+namespace Game.Core.Session
+{
+    public interface ISessionRunner: ITickSystem
+    {
+        GameSession Session { get; }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Session\SessionCoordinator.cs ===
+using System;
+using FTg.Common.Observables;
+using Game.Core.Common;
+
+namespace Game.Core.Session
+{
+    public sealed class SessionCoordinator : IDisposable
+    {
+        private readonly ISessionBuilder _sessionBuilder;
+        private ISessionRunner _runner;
+        private bool _restartRequested;
+        private readonly ObservableEvent<GameSession> _newSession = new();
+        private readonly ObservableEvent<GameSession> _endSession = new();
+        public IObservable<GameSession>  NewSession     => _newSession;
+        public IObservable<GameSession>  EndSession     => _endSession;
+
+        public SessionCoordinator(ISessionBuilder sessionBuilder)
+        {
+            _sessionBuilder = sessionBuilder;
+        }
+
+        public void StartNewSession()
+        {
+            EndCurrentSession();
+            _runner = _sessionBuilder.NewSessionRunner();
+            _newSession.Raise(_runner.Session);
+        }
+
+        public void RequestRestart()
+        {
+            _restartRequested = true;
+        }
+
+        public void Tick(float deltaTime)
+        {
+            if (_restartRequested)
+            {
+                _restartRequested = false;
+                StartNewSession();
+                return;
+            }
+
+            _runner?.Tick(deltaTime);
+        }
+
+        public void EndCurrentSession()
+        {
+            if (_runner == null) return;
+            
+            _endSession.Raise(_runner.Session);
+            (_runner as IDisposable)?.Dispose();
+            _runner = null;
+        }
+
+        public void Dispose()
+        {
+            EndCurrentSession();
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\StateMachine\IState.cs ===
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Game.Core.Common.Fsm
+{
+    /// <summary>
+    /// РЎС‚Р°РЅ Р°РІС‚РѕРјР°С‚Р°.
+    /// </summary>
+    /// <typeparam name="TContext"></typeparam>
+    /// <typeparam name="TStateId"></typeparam>
+    public interface IState<in TContext, TStateId>
+    {
+        TStateId Id { get; }
+
+        /// <summary>
+        /// Р’РёРєР»РёРєР°С”С‚СЊСЃСЏ РїСЂРё РІС…РѕРґС– РІ СЃС‚Р°РЅ.
+        /// РњРѕР¶Рµ Р±СѓС‚Рё Р°СЃРёРЅС…СЂРѕРЅРЅРёРј вЂ” РЅР°РїСЂРёРєР»Р°Рґ, РѕС‡С–РєСѓРІР°С‚Рё РІС…С–РґРЅСѓ Р°РЅС–РјР°С†С–СЋ.
+        /// StateMachine РЅРµ РїРµСЂРµС…РѕРґРёС‚СЊ РґРѕ Tick РїРѕРєРё Р·Р°РґР°С‡Р° РЅРµ Р·Р°РІРµСЂС€РёС‚СЊСЃСЏ.
+        /// </summary>
+        Task Enter(TContext ctx, CancellationToken ct);
+
+        /// <summary>
+        /// Р’РёРєР»РёРєР°С”С‚СЊСЃСЏ РїСЂРё РІРёС…РѕРґС– Р·С– СЃС‚Р°РЅСѓ.
+        /// РњРѕР¶Рµ Р±СѓС‚Рё Р°СЃРёРЅС…СЂРѕРЅРЅРёРј вЂ” РЅР°РїСЂРёРєР»Р°Рґ, РѕС‡С–РєСѓРІР°С‚Рё РІРёС…С–РґРЅСѓ Р°РЅС–РјР°С†С–СЋ.
+        /// StateMachine РЅРµ Р°РєС‚РёРІСѓС” РЅРѕРІРёР№ СЃС‚Р°РЅ РїРѕРєРё Р·Р°РґР°С‡Р° РЅРµ Р·Р°РІРµСЂС€РёС‚СЊСЃСЏ.
+        /// </summary>
+        Task Exit(TContext ctx, CancellationToken ct);
+
+        /// <summary>
+        /// РџРѕРІРµСЂС‚Р°С” true, СЏРєС‰Рѕ СЃС‚Р°РЅ Р·Р°РїРёС‚СѓС” РїРµСЂРµС…С–Рґ РґРѕ РЅР°СЃС‚СѓРїРЅРѕРіРѕ СЃС‚Р°РЅСѓ.
+        /// РќРµ РІРёРєР»РёРєР°С”С‚СЊСЃСЏ РїС–Рґ С‡Р°СЃ async-РїРµСЂРµС…РѕРґСѓ.
+        /// </summary>
+        bool Tick(TContext ctx, float dt, out TStateId next);
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\StateMachine\StateMachine.cs ===
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Game.Core.Common.Fsm
+{
+    /// <summary>
+    /// РљРѕРЅРµС‡РЅС‹Р№ Р°РІС‚РѕРјР°С‚ СЃ РїРѕРґРґРµСЂР¶РєРѕР№ Р°СЃРёРЅС…СЂРѕРЅРЅС‹С… Enter/Exit.
+    /// РџРѕРєР° РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РїРµСЂРµС…РѕРґ (Enter/Exit) вЂ” Tick РЅРµ РІС‹Р·С‹РІР°РµС‚СЃСЏ.
+    /// </summary>
+    public sealed class StateMachine<TContext, TStateId> : ITickSystem, IDisposable
+        where TStateId : notnull
+    {
+        private readonly Dictionary<TStateId, IState<TContext, TStateId>> _states = new();
+        private readonly CancellationTokenSource _lifetimeCts = new();
+
+        public TContext                           Context   { get; }
+        public IState<TContext, TStateId>         Current   { get; private set; }
+        public TStateId                           CurrentId { get; private set; }
+
+        private bool     _isTransitioning;
+        private bool     _disposed;
+        private bool     _hasForcedTransition;
+        private TStateId _forcedNextId;
+
+        public StateMachine(TContext context) => Context = context;
+
+        public StateMachine<TContext, TStateId> Add(IState<TContext, TStateId> state)
+        {
+            if (state == null) throw new ArgumentNullException(nameof(state));
+            _states[state.Id] = state;
+            return this;
+        }
+
+        /// <summary>
+        /// Р—Р°РїСѓСЃРєР°РµС‚ Р°РІС‚РѕРјР°С‚: РїРµСЂРµС…РѕРґРёС‚ РІ РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ Рё РѕР¶РёРґР°РµС‚ Р·Р°РІРµСЂС€РµРЅРёСЏ Enter.
+        /// Tick РЅРµ Р±СѓРґРµС‚ РІС‹Р·С‹РІР°С‚СЊСЃСЏ РґРѕ Р·Р°РІРµСЂС€РµРЅРёСЏ Enter.
+        /// </summary>
+        public void Start(TStateId initial)
+        {
+            if (!_states.TryGetValue(initial, out var st))
+                throw new InvalidOperationException($"State '{initial}' not registered.");
+
+            Current          = st;
+            CurrentId        = initial;
+            _isTransitioning = true;
+            _ = RunEnterAsync(st);
+        }
+
+        public void Tick(float dt)
+        {
+            if (_disposed || _isTransitioning || Current == null) return;
+
+            if (_hasForcedTransition)
+            {
+                ApplyForcedTransition();
+                return;
+            }
+
+            if (Current.Tick(Context, dt, out var next))
+                TransitionTo(next);
+        }
+
+        public void TransitionTo(TStateId next)
+        {
+            if (_isTransitioning) return;
+            if (EqualityComparer<TStateId>.Default.Equals(CurrentId, next)) return;
+            if (!_states.ContainsKey(next))
+                throw new InvalidOperationException($"State '{next}' not registered.");
+
+            _ = RunTransitionAsync(next);
+        }
+
+        /// <summary>
+        /// РџСЂРёРЅСѓРґРёС‚РµР»СЊРЅС‹Р№ РїРµСЂРµС…РѕРґ: РµСЃР»Рё FSM СЃРµР№С‡Р°СЃ РІ transition вЂ” РїРµСЂРµС…РѕРґ СЃС‚Р°РІРёС‚СЃСЏ РІ РѕС‡РµСЂРµРґСЊ
+        /// Рё РїСЂРёРјРµРЅСЏРµС‚СЃСЏ СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ Р·Р°РІРµСЂС€РµРЅРёСЏ С‚РµРєСѓС‰РµРіРѕ.
+        /// </summary>
+        public void ForceTransitionTo(TStateId next)
+        {
+            if (_disposed) return;
+            if (EqualityComparer<TStateId>.Default.Equals(CurrentId, next)) return;
+
+            _forcedNextId        = next;
+            _hasForcedTransition = true;
+
+            if (!_isTransitioning)
+                ApplyForcedTransition();
+        }
+
+        private void ApplyForcedTransition()
+        {
+            if (!_hasForcedTransition) return;
+            _hasForcedTransition = false;
+            var next = _forcedNextId;
+            if (!_states.ContainsKey(next))
+                throw new InvalidOperationException($"State '{next}' not registered.");
+            _ = RunTransitionAsync(next);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _lifetimeCts.Cancel();
+            _lifetimeCts.Dispose();
+        }
+
+        // в”Ђв”Ђ РїСЂРёРІР°С‚РЅС‹Рµ async-РјРµС‚РѕРґС‹ в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
+
+        private async Task RunEnterAsync(IState<TContext, TStateId> state)
+        {
+            try
+            {
+                await state.Enter(Context, _lifetimeCts.Token);
+            }
+            catch (OperationCanceledException) { /* dispose */ }
+            finally
+            {
+                if (!_disposed) _isTransitioning = false;
+            }
+        }
+
+        private async Task RunTransitionAsync(TStateId next)
+        {
+            _isTransitioning = true;
+            var ct = _lifetimeCts.Token;
+            try
+            {
+                // 1. Р¶РґС‘Рј РѕРєРѕРЅС‡Р°РЅРёСЏ С‚РµРєСѓС‰РµРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ (РЅР°РїСЂРёРјРµСЂ, Р°РЅРёРјР°С†РёСЏ РІС‹С…РѕРґР°)
+                await Current.Exit(Context, ct);
+
+                if (!_states.TryGetValue(next, out var st))
+                    throw new InvalidOperationException($"State '{next}' not registered.");
+
+                Current   = st;
+                CurrentId = next;
+
+                // 2. Р¶РґС‘Рј РіРѕС‚РѕРІРЅРѕСЃС‚Рё РЅРѕРІРѕРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ (РЅР°РїСЂРёРјРµСЂ, Р°РЅРёРјР°С†РёСЏ РІС…РѕРґР°)
+                await st.Enter(Context, ct);
+            }
+            catch (OperationCanceledException) { /* dispose */ }
+            finally
+            {
+                if (!_disposed)
+                {
+                    _isTransitioning = false;
+                    if (_hasForcedTransition)
+                        ApplyForcedTransition();
+                }
+            }
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Units\AimPointUtility.cs ===
+using UnityEngine;
+
+namespace Game.Core.Units
+{
+    /// <summary>
+    /// Resolves the world-space aim point for a given unit.
+    /// Currently returns the unit's position; extend as needed (e.g. centre-of-mass offset).
+    /// </summary>
+    public static class AimPointUtility
+    {
+        public static Vector3 Resolve(Unit unit) => unit.Position;
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Units\IEnemyFactory.cs ===
+using UnityEngine;
+
+namespace Game.Core.Units
+{
+    /// <summary>
+    /// Spawns an enemy at the given world position.
+    /// Implemented in the Client layer (EnemyFactory).
+    /// Uses <see cref="IEnemyData"/> so Core doesn't depend on client ScriptableObjects.
+    /// </summary>
+    public interface IEnemyFactory
+    {
+        void Spawn(UnitConfig config, Vector3 position, Quaternion rotation);
+    }
+}
+
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Units\Unit.cs ===
+using UnityEngine;
+
+namespace Game.Core.Units
+{
+    public abstract class Unit
+    {
+        public readonly UnitStats  Stats;
+        public readonly UnitSkills Skills;
+        public readonly LayerMask  TargetMask;
+
+        public abstract Vector3 Position { get; }
+        public abstract Vector3 AimPoint { get; }
+        public virtual  Vector3 Forward  => Vector3.forward;
+
+        protected Unit(UnitConfig config)
+        {
+            Stats      = new UnitStats(config.CreateStats());
+            Skills     = new UnitSkills(config.CreateSkills());
+            TargetMask = config.TargetMask;
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Units\UnitConfig.cs ===
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using FTg.Common;
+using UnityEngine;
+
+namespace Game.Core.Units
+{
+    public abstract class UnitConfig : ScriptableObject
+    {
+        [SerializeReference, SelectInstance(typeof(UnitStat))]
+        private UnitStat[] stats = Array.Empty<UnitStat>();
+
+        [SerializeReference, SelectInstance(typeof(ISkill))]
+        private ISkill[] skills  = Array.Empty<ISkill>();
+        
+        [field: SerializeField]
+        public LayerMask TargetMask { get; private set; } = default;
+
+        public IEnumerable<UnitStat> CreateStats()
+            => from stat in stats where stat != null select stat.Clone();
+
+        public IEnumerable<ISkill> CreateSkills()
+            => from skill in skills where skill != null select skill.Clone();
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Units\UnitSkills.cs ===
+using System;
+using System.Collections.Generic;
+
+namespace Game.Core.Units
+{
+    /// <summary>
+    /// Typed container for a unit's runtime skills.
+    /// Built once from UnitConfig.CreateSkills() and owned by Unit.
+    /// </summary>
+    public sealed class UnitSkills
+    {
+        private readonly Dictionary<Type, ISkill> _skills = new();
+        private readonly List<ISkill>             _unique = new();
+
+        internal UnitSkills(IEnumerable<ISkill> skills)
+        {
+            foreach (var s in skills)
+                Add(s.GetType(), s);
+        }
+
+        public void Add<TSkill>(TSkill skill) where TSkill : class, ISkill
+            => Add(typeof(TSkill), skill);
+
+        /// <summary>All unique skill instances вЂ” used for batch injection in Unit ctor.</summary>
+        public IReadOnlyList<ISkill> All => _unique;
+
+        private void Add(Type concreteType, ISkill skill)
+        {
+            _skills[concreteType] = skill ?? throw new ArgumentNullException(nameof(skill));
+            _unique.Add(skill);
+            RegisterSkillInterfaces(skill);
+        }
+
+        public TSkill Get<TSkill>() where TSkill : class, ISkill
+        {
+            if (_skills.TryGetValue(typeof(TSkill), out var skill))
+                return (TSkill)skill;
+            throw new InvalidOperationException($"Skill '{typeof(TSkill).Name}' is not registered on unit.");
+        }
+
+        public bool Has<TSkill>() where TSkill : class, ISkill
+            => _skills.ContainsKey(typeof(TSkill));
+
+        private void RegisterSkillInterfaces(ISkill skill)
+        {
+            var concreteType = skill.GetType();
+            foreach (var type in concreteType.GetInterfaces())
+            {
+                if (type == typeof(ISkill)) continue;
+                if (!typeof(ISkill).IsAssignableFrom(type)) continue;
+                _skills[type] = skill;
+            }
+        }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Units\UnitStats.cs ===
+using System;
+using System.Collections.Generic;
+
+namespace Game.Core.Units
+{
+    /// <summary>
+    /// Typed container for a unit's runtime stats (HP, speed, etc.).
+    /// Built once from UnitConfig.CreateStats() and owned by Unit.
+    /// </summary>
+    public sealed class UnitStats
+    {
+        private readonly Dictionary<Type, UnitStat> _items = new();
+        private readonly List<UnitStat>             _unique = new();
+
+        internal UnitStats(IEnumerable<UnitStat> stats)
+        {
+            foreach (var s in stats)
+            {
+                _items[s.GetType()] = s;
+                _unique.Add(s);
+            }
+        }
+
+        /// <summary>All unique stat instances in insertion order.</summary>
+        public IReadOnlyList<UnitStat> All => _unique;
+
+        public T Get<T>() where T : UnitStat
+        {
+            if (_items.TryGetValue(typeof(T), out var s))
+                return (T)s;
+            throw new InvalidOperationException($"Stat '{typeof(T).Name}' is not registered on unit.");
+        }
+
+        public bool Has<T>() where T : UnitStat => _items.ContainsKey(typeof(T));
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Units\Skills\IAttackSkill.cs ===
+using UnityEngine;
+
+namespace Game.Core.Units
+{
+    public interface IAttackSkill : ISkill
+    {
+        bool CanUse(in AttackContext context);
+        void Use(in AttackContext context);
+    }
+
+    public record AttackContext(Unit Source, Vector3 Origin, Vector3 Direction, LayerMask HitMask, Unit Target);
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Units\Skills\ISkill.cs ===
+using System;
+
+namespace Game.Core.Units
+{
+    public interface ISkill : IDisposable
+    {
+        ISkill Clone();
+
+        /// <summary>
+        /// РџСЂРёРІСЏР·С‹РІР°РµС‚ СЃРєРёР»Р» Рє СЋРЅРёС‚Сѓ-РІР»Р°РґРµР»СЊС†Сѓ.
+        /// Р’С‹Р·С‹РІР°РµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІ BaseUnit РїРѕСЃР»Рµ DI-РёРЅСЉРµРєС†РёРё.
+        /// РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ вЂ” no-op; РїРµСЂРµРѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ СЃРєРёР»Р»Р°РјРё, РєРѕС‚РѕСЂС‹Рј РЅСѓР¶РµРЅ РІР»Р°РґРµР»РµС†.
+        /// </summary>
+        void Bind(Unit owner) { }
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Units\Stats\UnitStat.cs ===
+using System;
+using FTg.Common.Observables;
+using UnityEngine;
+
+namespace Game.Core.Units
+{
+    [Serializable]
+    public abstract class UnitStat
+    {
+        [SerializeField, Min(1f)]
+        protected float max = 100f;
+        
+        [NonSerialized]
+        protected ObservableEvent<UnitStat> _onChange = new();
+
+        public IObservable<UnitStat> OnChange => _onChange;
+        public float Value { get; protected set; }
+        public float Max     => max;
+        public float Ratio   => max > 0f ? Value / max : 0f;
+        
+        public abstract UnitStat Clone();
+    }
+}
+
+=== E:\Sources\Test\Game\Assets\_src\Core\Units\Stats\Specifics\HpStat.cs ===
+using System;
+using UnityEngine;
+
+namespace Game.Core.Units
+{
+    [Serializable]
+    public sealed class HpStat : UnitStat
+    {
+        public bool  IsAlive => Value > 0f;
+
+        public HpStat() { }
+        public HpStat(float max)
+        {
+            this.max  = max;
+            Value = max;
+        }
+
+        public override UnitStat Clone() => new HpStat(max);
+
+        internal void Apply(float delta)
+        {
+            Value = Mathf.Clamp(Value + delta, 0f, max);
+            _onChange.Raise(this);
+        }
+    }
+}
+

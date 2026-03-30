@@ -7,28 +7,40 @@ using UnityEngine;
 
 namespace Game.Client.Services
 {
+    /// <summary>
+    /// Сервіс спауну ворогів на дорозі за конфігурацією рівня.
+    /// Обирає паттерни через зважену випадковість і розміщує ворогів
+    /// попереду автомобіля гравця у заданих смугах.
+    /// </summary>
     public sealed class RoadSpawnService
     {
-        private readonly LevelConfig   _levelConfig;
-        private readonly GameSession   _session;
-        private readonly IEnemyFactory _enemyFactory;
-        private readonly EnemyRegistry _enemyRegistry;
+        private readonly LevelConfig    _levelConfig;
+        private readonly GameSession    _session;
+        private readonly IEnemyFactory  _enemyFactory;
+        private readonly GameStatistics _gameStatistics;
 
         private float _nextSpawnAtCarZ;
         private bool  _initialized;
 
+        /// <summary>
+        /// Створює сервіс спауну.
+        /// </summary>
         public RoadSpawnService(
-            LevelConfig   levelConfig,
-            GameSession   session,
-            IEnemyFactory enemyFactory,
-            EnemyRegistry enemyRegistry)
+            LevelConfig    levelConfig,
+            GameSession    session,
+            IEnemyFactory  enemyFactory,
+            GameStatistics gameStatistics)
         {
-            _levelConfig   = levelConfig;
-            _session       = session;
-            _enemyFactory  = enemyFactory;
-            _enemyRegistry = enemyRegistry;
+            _levelConfig    = levelConfig;
+            _session        = session;
+            _enemyFactory   = enemyFactory;
+            _gameStatistics = gameStatistics;
         }
 
+        /// <summary>
+        /// Перевіряє умови спауну і при потребі розміщує нову групу ворогів.
+        /// </summary>
+        /// <param name="deltaTime">Дельта-час у секундах.</param>
         public void Tick(float deltaTime)
         {
             if (_session.IsPaused) return;
@@ -46,9 +58,7 @@ namespace Game.Client.Services
             }
 
             if (carZ < _nextSpawnAtCarZ) return;
-
-            // LiveCount — authoritative live-enemy counter (not pool's ActiveCount)
-            if (_enemyRegistry.LiveCount >= spawnConfig.MaxAliveEnemies) return;
+            if (_gameStatistics.LiveCount >= spawnConfig.MaxAliveEnemies) return;
 
             var pattern = PickPattern(spawnConfig);
             if (pattern == null || pattern.Entries.Length == 0)
@@ -65,8 +75,6 @@ namespace Game.Client.Services
             SpawnPattern(pattern, groupBaseZ, spawnConfig);
             ScheduleNext(carZ, spawnConfig);
         }
-
-        // ------------------------------------------------------------------ helpers
 
         private void SpawnPattern(RoadSpawnPatternData pattern, float groupBaseZ, RoadSpawnConfig cfg)
         {
@@ -105,7 +113,6 @@ namespace Game.Client.Services
         private static RoadSpawnPatternData PickPattern(RoadSpawnConfig cfg)
         {
             var total = cfg.Patterns.Where(p => p is { Weight: > 0 }).Sum(p => p.Weight);
-
             if (total <= 0) return null;
 
             var roll = Random.Range(0, total);

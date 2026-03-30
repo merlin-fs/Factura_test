@@ -1,5 +1,6 @@
 using Game.Client.Config;
 using Game.Client.Views;
+using Game.Core.Services;
 using Game.Core.Units;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -7,49 +8,56 @@ using UnityEngine.Rendering;
 namespace Game.Client.Units
 {
     /// <summary>
-    /// Responsible for computing the turret aim point/direction and
-    /// rendering the laser sight line.
-    /// Extracted from Turret to keep concerns separate.
+    /// Відповідає за обчислення точки та напрямку прицілювання турелі,
+    /// а також за відображення лазерного прицілу (LineRenderer).
+    /// Виділено з <see cref="Turret"/> для розділення відповідальностей.
     /// </summary>
     public sealed class TurretAimResolver
     {
-        private readonly TurretView   _view;
-        private readonly TurretConfig _config;
-        private readonly Unit         _playerUnit;
+        private readonly TurretView       _view;
+        private readonly TurretConfig     _config;
+        private readonly Unit             _playerUnit;
+        private readonly ITargetsProvider _targetsProvider;
 
-        private LineRenderer          _aimLine;
-        private readonly RaycastHit[] _aimBuffer = new RaycastHit[1];
+        private LineRenderer    _aimLine;
+        private readonly Unit[] _aimBuffer = new Unit[8];
 
-        /// <summary>Visual end-point of the laser (world space).</summary>
+        /// <summary>Кінцева точка лазера у світовому просторі.</summary>
         public Vector3 AimPoint      { get; private set; }
 
-        /// <summary>Direction used when firing a projectile (Y-corrected toward enemy center).</summary>
+        /// <summary>Напрямок пострілу (Y-скоригований у бік центру ворога).</summary>
         public Vector3 FireDirection { get; private set; }
 
-        /// <summary>True when the laser is locked onto an enemy collider.</summary>
+        /// <summary>Повертає <c>true</c>, якщо лазер захоплює ворога.</summary>
         public bool    HasAimTarget  { get; private set; }
 
         private static readonly Color ColorOnTarget  = new Color(1f, 0.15f, 0.15f, 1f);
         private static readonly Color ColorSearching = new Color(1f, 0.85f, 0f,   0.7f);
 
-        public TurretAimResolver(TurretView view, TurretConfig config, Unit playerUnit)
+        /// <summary>
+        /// Створює резолвер і налаштовує LineRenderer для лазерного прицілу.
+        /// </summary>
+        public TurretAimResolver(
+            TurretView       view,
+            TurretConfig     config,
+            Unit             playerUnit,
+            ITargetsProvider targetsProvider)
         {
-            _view       = view;
-            _config     = config;
-            _playerUnit = playerUnit;
+            _view            = view;
+            _config          = config;
+            _playerUnit      = playerUnit;
+            _targetsProvider = targetsProvider;
             SetupAimLine();
         }
 
-        // ------------------------------------------------------------------ public
-
-        /// <summary>Recompute aim and refresh the laser line. Call once per frame.</summary>
+        /// <summary>
+        /// Перераховує прицілювання та оновлює лазерну лінію. Викликати один раз на кадр.
+        /// </summary>
         public void Update()
         {
-            ComputeAim();
+            UpdateAim();
             UpdateAimLine();
         }
-
-        // ------------------------------------------------------------------ private
 
         private void SetupAimLine()
         {
@@ -68,44 +76,88 @@ namespace Game.Client.Units
                 _aimLine.material = new Material(Shader.Find("Sprites/Default"));
         }
 
-        /// <summary>
-        /// SphereCast in the XZ-plane from the muzzle.
-        /// When <see cref="TurretConfig.LockOnTarget"/> is true the laser snaps to enemy center;
-        /// otherwise the laser stays straight but the fire direction still Y-corrects toward center.
-        /// </summary>
-        private void ComputeAim()
+        private void UpdateAim()
         {
             var muzzlePos   = _view.Muzzle.position;
-            var flatForward = new Vector3(_view.Muzzle.forward.x, 0f, _view.Muzzle.forward.z);
+            var flatForward = _view.transform.forward;
+            flatForward.y   = 0f;
 
             if (flatForward.sqrMagnitude < 0.0001f)
+                flatForward = Vector3.forward;
+            else
+                flatForward.Normalize();
+
+            var query = new HitQuery(
+                HitQueryType.SphereCastXZ,
+                _playerUnit,
+                muzzlePos,
+                flatForward,
+                _config.AimRange,
+                _config.AimRadius,
+                _playerUnit.TargetMask,
+                _aimBuffer.Length);
+
+            var count  = _targetsProvider.Collect(query, _aimBuffer);
+            var target = SelectBestAimTarget(muzzlePos, flatForward, _aimBuffer, count);
+
+            HasAimTarget = target != null;
+
+            if (target != null)
             {
-                AimPoint      = muzzlePos + _view.Muzzle.forward * _config.AimRange;
-                FireDirection = _view.Muzzle.forward;
-                HasAimTarget  = false;
-                return;
-            }
-
-            flatForward.Normalize();
-
-            var flatOrigin = new Vector3(muzzlePos.x, 0f, muzzlePos.z);
-            var hitCount   = Physics.SphereCastNonAlloc(
-                flatOrigin, _config.AimRadius, flatForward,
-                _aimBuffer, _config.AimRange, _playerUnit.TargetMask);
-
-            if (hitCount > 0)
-            {
-                var enemyCenter = _aimBuffer[0].collider.bounds.center;
-                AimPoint      = _config.LockOnTarget ? enemyCenter : muzzlePos + flatForward * _config.AimRange;
-                FireDirection = (enemyCenter - muzzlePos).normalized;
-                HasAimTarget  = true;
+                var targetPoint = AimPointUtility.Resolve(target);
+                AimPoint      = _config.LockOnTarget
+                    ? targetPoint
+                    : muzzlePos + flatForward * _config.AimRange;
+                FireDirection = (targetPoint - muzzlePos).normalized;
             }
             else
             {
-                AimPoint      = muzzlePos + flatForward * _config.AimRange;
+                AimPoint      = GetFallbackAimPoint(muzzlePos, flatForward);
                 FireDirection = flatForward;
-                HasAimTarget  = false;
             }
+
+            ClearAimBuffer(count);
+        }
+
+        private Unit SelectBestAimTarget(Vector3 origin, Vector3 flatForward, Unit[] targets, int count)
+        {
+            Unit  best                = null;
+            var   bestForwardDistance = float.MaxValue;
+            var   bestLateralSqr     = float.MaxValue;
+
+            for (var i = 0; i < count; i++)
+            {
+                var unit = targets[i];
+                if (unit == null) continue;
+
+                var toTarget = unit.Position - origin;
+                toTarget.y = 0f;
+
+                var forwardDistance = Vector3.Dot(flatForward, toTarget);
+                if (forwardDistance < 0f) continue;
+
+                var projected  = flatForward * forwardDistance;
+                var lateralSqr = (toTarget - projected).sqrMagnitude;
+
+                var isBetter = lateralSqr < bestLateralSqr - 0.0001f
+                               || (Mathf.Abs(lateralSqr - bestLateralSqr) < 0.0001f &&
+                                   forwardDistance < bestForwardDistance);
+
+                if (!isBetter) continue;
+
+                best                = unit;
+                bestForwardDistance = forwardDistance;
+                bestLateralSqr      = lateralSqr;
+            }
+
+            return best;
+        }
+
+        private Vector3 GetFallbackAimPoint(Vector3 muzzlePosition, Vector3 flatForward)
+        {
+            Vector3 point = muzzlePosition + flatForward * _config.AimRange;
+            point.y = _config.FallbackAimY;
+            return point;
         }
 
         private void UpdateAimLine()
@@ -117,6 +169,12 @@ namespace Game.Client.Units
             var color = HasAimTarget ? ColorOnTarget : ColorSearching;
             _aimLine.startColor = color;
             _aimLine.endColor   = new Color(color.r, color.g, color.b, 0f);
+        }
+
+        private void ClearAimBuffer(int count)
+        {
+            for (var i = 0; i < count; i++)
+                _aimBuffer[i] = null;
         }
     }
 }

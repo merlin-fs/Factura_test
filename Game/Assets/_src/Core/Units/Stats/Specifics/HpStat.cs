@@ -1,34 +1,43 @@
 using System;
-using FTg.Common.Observables;
 using UnityEngine;
 
 namespace Game.Core.Units
 {
+    /// <summary>
+    /// Статистика здоров'я (HP) юніта.
+    /// Забезпечує зміну значення та перевірку стану живий/мертвий.
+    /// </summary>
     [Serializable]
     public sealed class HpStat : UnitStat
     {
-        [SerializeField, Min(1f)]
-        private float max = 100f;
-        public float Max     => max;
-        public float Ratio   => max > 0f ? Value / max : 0f;
-        public bool  IsAlive => Value > 0f;
+        /// <summary>Повертає <c>true</c>, якщо юніт живий (HP > 0).</summary>
+        public bool IsAlive => Value > 0f;
 
-        [NonSerialized]
-        public readonly ObservableEvent<float> OnChange = new();
-
+        /// <summary>Створює екземпляр HpStat із максимальним значенням за замовчуванням.</summary>
         public HpStat() { }
+
+        /// <summary>
+        /// Створює екземпляр HpStat із заданим максимумом, ініціалізуючи HP до максимуму.
+        /// </summary>
+        /// <param name="max">Максимальне значення HP.</param>
         public HpStat(float max)
         {
-            this.max  = max;
-            Value = max;
+            this.max = max;
+            Value    = max;
         }
 
+        /// <inheritdoc/>
         public override UnitStat Clone() => new HpStat(max);
 
+        /// <summary>
+        /// Змінює поточне HP на задельту (від'ємна — шкода, додатня — лікування).
+        /// Значення затискається в діапазоні [0, max].
+        /// </summary>
+        /// <param name="delta">Зміна HP.</param>
         internal void Apply(float delta)
         {
             Value = Mathf.Clamp(Value + delta, 0f, max);
-            OnChange.Invoke(Value);
+            _onChange.Raise(this);
         }
     }
 }

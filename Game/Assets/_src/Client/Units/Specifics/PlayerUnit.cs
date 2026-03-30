@@ -11,20 +11,28 @@ using UnityEngine;
 
 namespace Game.Client.Units
 {
+    /// <summary>
+    /// Юніт гравця на чистому C#. Рухається вперед по осі Z та переходить у Dead при втраті HP.
+    /// </summary>
     public sealed class PlayerUnit : BaseUnit
     {
+        /// <inheritdoc/>
         public override Vector3 Position => _transform.position;
+        /// <inheritdoc/>
+        public override Vector3 AimPoint => _transform.position;
 
-        private readonly float                               _speed;
-        private readonly Transform                           _transform;
-        private readonly StateMachine<PlayerUnit, CarState>  _fsm;
+        private readonly float                              _speed;
+        private readonly Transform                          _transform;
+        private readonly StateMachine<PlayerUnit, CarState> _fsm;
 
+        /// <summary>
+        /// Створює юніта гравця та запускає FSM.
+        /// </summary>
         public PlayerUnit(PlayerConfig config, CarView view,
             TickSystemRegistry tickSystemRegistry, IObjectResolver container) : base(config, container)
         {
-
             _transform = view.transform;
-            _speed = config.MoveSpeed;
+            _speed     = config.MoveSpeed;
 
             _fsm = new StateMachine<PlayerUnit, CarState>(this)
                 .Add(new DrivingState())
@@ -34,19 +42,18 @@ namespace Game.Client.Units
             tickSystemRegistry.Register(_fsm);
         }
 
-        #region fsm states
+        /// <summary>Стан руху вперед. Переходить у Dead при втраті HP.</summary>
         private sealed class DrivingState : IState<PlayerUnit, CarState>
         {
             public CarState Id => CarState.Driving;
-            public Task Enter(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask; 
+            public Task Enter(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask;
             public Task Exit(PlayerUnit ctx, CancellationToken ct) => Task.CompletedTask;
 
             public bool Tick(PlayerUnit ctx, float dt, out CarState next)
             {
-
                 if (!ctx.Stats.Get<HpStat>().IsAlive)
                 {
-                    next = CarState.Dead; 
+                    next = CarState.Dead;
                     return true;
                 }
 
@@ -59,6 +66,7 @@ namespace Game.Client.Units
             }
         }
 
+        /// <summary>Стан загибелі гравця. Нічого не робить.</summary>
         private sealed class DeadState : IState<PlayerUnit, CarState>
         {
             public CarState Id => CarState.Dead;
@@ -71,6 +79,5 @@ namespace Game.Client.Units
                 return false;
             }
         }
-        #endregion
     }
 }

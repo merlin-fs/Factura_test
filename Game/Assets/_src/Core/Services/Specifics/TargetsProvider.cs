@@ -3,29 +3,37 @@ using UnityEngine;
 
 namespace Game.Core.Services
 {
+    /// <summary>
+    /// Реалізація <see cref="ITargetsProvider"/> на основі Unity Physics.
+    /// Підтримує різні типи геометрії перевірок: промінь, сфера, капсула.
+    /// </summary>
     public sealed class TargetsProvider : ITargetsProvider
     {
         private readonly IUnitRegistry _unitRegistry;
 
-        private readonly RaycastHit[] _raycastBuffer = new RaycastHit[16];
-        private readonly Collider[] _overlapBuffer = new Collider[32];
+        private readonly RaycastHit[] _raycastBuffer  = new RaycastHit[16];
+        private readonly Collider[]   _overlapBuffer  = new Collider[32];
 
+        /// <summary>
+        /// Створює екземпляр провайдера.
+        /// </summary>
+        /// <param name="unitRegistry">Реєстр колайдер → юніт.</param>
         public TargetsProvider(IUnitRegistry unitRegistry)
         {
             _unitRegistry = unitRegistry;
         }
 
+        /// <inheritdoc/>
         public int Collect(in HitQuery query, Unit[] results)
         {
             return query.Type switch
             {
-                HitQueryType.Ray => CollectRay(query, results),
-                HitQueryType.SphereCast => CollectSphereCast(query, results),
-                HitQueryType.SphereCastXZ => CollectSphereCastXZ(query, results),
+                HitQueryType.Ray           => CollectRay(query, results),
+                HitQueryType.SphereCast    => CollectSphereCast(query, results),
+                HitQueryType.SphereCastXZ  => CollectSphereCastXZ(query, results),
                 HitQueryType.OverlapSphere => CollectOverlapSphere(query, results),
                 HitQueryType.OverlapCapsule => CollectOverlapCapsule(query, results),
-                
-                _ => 0
+                _                          => 0
             };
         }
 
@@ -49,13 +57,10 @@ namespace Game.Core.Services
             return CollectUnitsFromRayHits(query.Source, _raycastBuffer, hitCount, results, query.MaxTargets);
         }
 
-        // Проверка столкновений без учёта Y: origin и direction проецируются на плоскость XZ.
-        // Сферический каст выполняется в горизонтальной плоскости (Y = 0),
-        // поэтому высота снаряда и врага не влияют на результат.
         private int CollectSphereCastXZ(in HitQuery query, Unit[] results)
         {
             var flatOrigin = new Vector3(query.Origin.x, 0f, query.Origin.z);
-            var flatDir = new Vector3(query.Direction.x, 0f, query.Direction.z);
+            var flatDir    = new Vector3(query.Direction.x, 0f, query.Direction.z);
             if (flatDir.sqrMagnitude > 0f)
                 flatDir.Normalize();
 
@@ -103,9 +108,7 @@ namespace Game.Core.Services
                     continue;
 
                 if (unit == null || unit == source) continue;
-
                 if (Contains(results, resultCount, unit)) continue;
-
                 if (resultCount >= results.Length || resultCount >= maxTargets) break;
 
                 results[resultCount++] = unit;
@@ -129,11 +132,8 @@ namespace Game.Core.Services
                     continue;
 
                 if (unit == null || unit == source) continue;
-
                 if (Contains(results, resultCount, unit)) continue;
-
-                if (resultCount >= results.Length || resultCount >= maxTargets)
-                    break;
+                if (resultCount >= results.Length || resultCount >= maxTargets) break;
 
                 results[resultCount++] = unit;
             }

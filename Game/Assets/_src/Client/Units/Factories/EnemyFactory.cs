@@ -1,3 +1,4 @@
+using System;
 using Game.Core.Common;
 using Game.Core.Services;
 using Game.Client.Config;
@@ -9,32 +10,40 @@ using UnityEngine;
 
 namespace Game.Client.Units
 {
-    public sealed class EnemyFactory : IEnemyFactory
+    /// <summary>
+    /// Фабрика ворожих юнітів. Керує пулом <see cref="EnemyView"/> та реєструє
+    /// статистику спауну/загибелі у <see cref="GameStatistics"/>.
+    /// </summary>
+    public sealed class EnemyFactory : IEnemyFactory, IDisposable
     {
         private readonly PrefabPool<EnemyView> _pool;
-        private readonly EnemyRegistry         _registry;
-        private readonly GameSession           _session;
-        private readonly TickSystemRegistry    _tickRegistry;
-        private readonly IObjectResolver       _container;
-
+        private readonly GameStatistics _registry;
+        private readonly GameSession _session;
+        private readonly TickSystemRegistry _tickRegistry;
+        private readonly IObjectResolver _container;
+        private readonly DamageService _damageService;
+    
         public EnemyFactory(
-            PrefabPool<EnemyView> pool,
-            EnemyRegistry         registry,
-            GameSession           session,
-            TickSystemRegistry    tickRegistry,
-            IObjectResolver       container)
+            Func<EnemyView, Transform, EnemyView> factoryMethod,
+            Transform parent,
+            GameStatistics registry,
+            GameSession session,
+            TickSystemRegistry tickRegistry,
+            DamageService damageService,
+            IObjectResolver container)
         {
-            _pool         = pool;
-            _registry     = registry;
-            _session      = session;
+            _pool = new PrefabPool<EnemyView>(factoryMethod, parent);
+            _registry = registry;
+            _session = session;
             _tickRegistry = tickRegistry;
-            _container    = container;
+            _damageService = damageService;
+            _container = container;
         }
 
         public void Spawn(UnitConfig config, Vector3 position, Quaternion rotation)
         {
             var enemyConfig = (EnemyConfig)config;
-            var view        = _pool.Get(enemyConfig.Prefab, position, rotation);
+            var view = _pool.Get(enemyConfig.Prefab, position, rotation);
             var collideLink = view.GetComponent<UnitColliderLink>();
 
             var agent = new EnemyUnit(
@@ -53,12 +62,18 @@ namespace Game.Client.Units
                     _pool.Return(view);
                     collideLink?.Unbind();
                 },
-                session:           _session,
+                session: _session,
                 tickSystemRegistry: _tickRegistry,
-                container:          _container);
+                damageService: _damageService,
+                container: _container);
 
             collideLink?.Bind(agent);
             _registry.TrackSpawn();
+        }
+
+        public void Dispose()
+        {
+            _pool?.Dispose();
         }
     }
 }

@@ -15,8 +15,8 @@ MonoBehaviour:
   <InitialSpawnDistance>k__BackingField: 3
   <MinSpawnAheadDistance>k__BackingField: 82.4
   <MaxSpawnAheadDistance>k__BackingField: 125
-  <MinDistanceBetweenGroups>k__BackingField: 20
-  <MaxDistanceBetweenGroups>k__BackingField: 28
+  <MinDistanceBetweenGroups>k__BackingField: 42.4
+  <MaxDistanceBetweenGroups>k__BackingField: 65.2
   <MaxAliveEnemies>k__BackingField: 123
   <SpawnY>k__BackingField: 0
   <LaneOffsetsX>k__BackingField:
@@ -45,13 +45,6 @@ MonoBehaviour:
     - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
       useRandomLane: 1
       laneIndex: 1
-      lateralOffset: 0.56
-      lateralJitter: 0
-      forwardOffset: -1.5
-      forwardJitter: 6.09
-    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
-      useRandomLane: 1
-      laneIndex: 1
       lateralOffset: -0.54
       lateralJitter: 0.91
       forwardOffset: -1.5
@@ -73,13 +66,6 @@ MonoBehaviour:
     - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
       useRandomLane: 1
       laneIndex: 1
-      lateralOffset: 0
-      lateralJitter: 0
-      forwardOffset: -1.5
-      forwardJitter: 4.17
-    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
-      useRandomLane: 1
-      laneIndex: 1
       lateralOffset: -0.66
       lateralJitter: 0.57
       forwardOffset: -1.5
@@ -96,22 +82,8 @@ MonoBehaviour:
       laneIndex: 1
       lateralOffset: -0.42
       lateralJitter: 0
-      forwardOffset: -0.89
-      forwardJitter: 10.79
-    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
-      useRandomLane: 1
-      laneIndex: 1
-      lateralOffset: -0.42
-      lateralJitter: 0
       forwardOffset: -1.5
       forwardJitter: 9.28
-    - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
-      useRandomLane: 1
-      laneIndex: 1
-      lateralOffset: -0.42
-      lateralJitter: 0
-      forwardOffset: -1.5
-      forwardJitter: 3.23
     - enemyConfig: {fileID: 11400000, guid: ac45d10f9f547654fb5eb9b38417d342, type: 2}
       useRandomLane: 1
       laneIndex: 1

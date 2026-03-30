@@ -2,16 +2,29 @@ using Game.Core.Units;
 
 namespace Game.Core.Services
 {
+    /// <summary>
+    /// Виконує перевірку зіткнень і делегує обробку влучань об'єкту <see cref="IHitHandler"/>.
+    /// </summary>
     public sealed class HitService
     {
         private readonly ITargetsProvider _targetsProvider;
         private readonly Unit[] _targetsBuffer = new Unit[16];
 
+        /// <summary>
+        /// Створює екземпляр сервісу.
+        /// </summary>
+        /// <param name="targetsProvider">Провайдер цілей для фізичних запитів.</param>
         public HitService(ITargetsProvider targetsProvider)
         {
             _targetsProvider = targetsProvider;
         }
 
+        /// <summary>
+        /// Обробляє всі цілі, знайдені за запитом.
+        /// </summary>
+        /// <param name="query">Параметри пошуку цілей.</param>
+        /// <param name="handler">Обробник для кожної знайденої цілі.</param>
+        /// <returns>Кількість оброблених цілей.</returns>
         public int Process(in HitQuery query, IHitHandler handler)
         {
             var count = _targetsProvider.Collect(query, _targetsBuffer);
@@ -25,6 +38,12 @@ namespace Game.Core.Services
             return count;
         }
 
+        /// <summary>
+        /// Обробляє тільки першу знайдену ціль.
+        /// </summary>
+        /// <param name="query">Параметри пошуку цілей.</param>
+        /// <param name="handler">Обробник для першої знайденої цілі.</param>
+        /// <returns><c>true</c>, якщо хоча б одна ціль знайдена та оброблена.</returns>
         public bool ProcessFirst(in HitQuery query, IHitHandler handler)
         {
             var count = _targetsProvider.Collect(query, _targetsBuffer);

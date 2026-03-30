@@ -3,10 +3,17 @@ using UnityEngine.InputSystem;
 
 namespace Game.Client.Input
 {
+    /// <summary>
+    /// Реалізація <see cref="IFireInput"/> на основі Unity Input System.
+    /// </summary>
     public sealed class FireInput : IFireInput, IDisposable
     {
         private readonly InputAction _action;
 
+        /// <summary>
+        /// Створює екземпляр та активує дію вводу.
+        /// </summary>
+        /// <param name="actionReference">Посилання на InputAction зі сцени.</param>
         public FireInput(InputActionReference actionReference)
         {
             if (actionReference == null)
@@ -18,24 +25,16 @@ namespace Game.Client.Input
             _action.Enable();
         }
 
-        public bool IsPressed()
-        {
-            return _action.IsPressed();
-        }
+        /// <inheritdoc/>
+        public bool IsPressed() => _action.IsPressed();
 
-        public bool WasPressedThisFrame()
-        {
-            return _action.WasPressedThisFrame();
-        }
+        /// <inheritdoc/>
+        public bool WasPressedThisFrame() => _action.WasPressedThisFrame();
 
-        public bool WasReleasedThisFrame()
-        {
-            return _action.WasReleasedThisFrame();
-        }
+        /// <inheritdoc/>
+        public bool WasReleasedThisFrame() => _action.WasReleasedThisFrame();
 
-        public void Dispose()
-        {
-            _action.Disable();
-        }
+        /// <summary>Деактивує дію вводу.</summary>
+        public void Dispose() => _action.Disable();
     }
 }

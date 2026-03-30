@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Game.Client.Bootstrap;
+using Game.Client.Common;
 using Game.Client.Config;
 using Game.Core.Session;
 using UnityEngine;
@@ -7,15 +7,10 @@ using UnityEngine;
 namespace Game.Client.Services
 {
     /// <summary>
-    /// Бесконечный тайлинг сегментов земли вдоль оси Z.
-    ///
-    /// Принцип работы:
-    ///   При первом Tick создаётся пул из (SegmentsAhead + SegmentsBehind + 1) сегментов.
-    ///   Каждый Tick: сегменты, ушедшие за хвостовую зону, переставляются вперёд (recycling).
-    ///
-    /// Данные о машине берутся из GameSession.Player.Position.
-    /// Параметры и префаб задаются через GroundLooperConfig.
-    /// Сегменты создаются под GroundRoot из GameplaySceneRefs.
+    /// Безкінечний тайлінг сегментів землі вздовж осі Z.
+    /// При першому Tick створює пул із (SegmentsAhead + SegmentsBehind + 1) сегментів.
+    /// Кожен Tick переставляє сегменти, що вийшли за хвостову зону, вперед (recycling).
+    /// Дані про автомобіль беруться з <see cref="GameSession.Player"/>.
     /// </summary>
     public sealed class GroundLooperService
     {
@@ -27,8 +22,12 @@ namespace Game.Client.Services
         private float _nextSpawnZ;
         private bool  _initialized;
 
-        // ─────────────────────────────────────────────────────────────────
-
+        /// <summary>
+        /// Створює сервіс.
+        /// </summary>
+        /// <param name="config">Конфігурація тайлінгу землі.</param>
+        /// <param name="refs">Посилання на об'єкти сцени.</param>
+        /// <param name="session">Поточна ігрова сесія.</param>
         public GroundLooperService(GroundLooperConfig config, GameplaySceneRefs refs, GameSession session)
         {
             _config  = config;
@@ -36,14 +35,15 @@ namespace Game.Client.Services
             _session = session;
         }
 
-        // ─────────────────────────────────────────────────────────────────
-
+        /// <summary>
+        /// Оновлює тайлінг: ініціалізує пул при першому виклику, потім переставляє сегменти.
+        /// </summary>
+        /// <param name="deltaTime">Дельта-час у секундах.</param>
         public void Tick(float deltaTime)
         {
             if (_config.SegmentPrefab == null) return;
             if (_session.Player       == null) return;
 
-            // Инициализация — первый кадр, когда Player уже создан
             if (!_initialized)
             {
                 Initialize();
@@ -54,12 +54,10 @@ namespace Game.Client.Services
 
             float carZ = _session.Player.Position.z;
 
-            // Переставляем сегменты, вышедшие за хвостовую зону, вперёд
             while (_pool.Count > 0)
             {
                 Transform back = _pool.Peek();
 
-                // Задний конец сегмента вышел за пределы удерживаемой зоны позади?
                 if (back.position.z + _config.SegmentLength < carZ - _config.SegmentsBehind * _config.SegmentLength)
                 {
                     _pool.Dequeue();
@@ -74,8 +72,6 @@ namespace Game.Client.Services
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
-
         private void Initialize()
         {
             _initialized = true;
@@ -84,7 +80,6 @@ namespace Game.Client.Services
             float     x    = root != null ? root.position.x : 0f;
             float     y    = root != null ? root.position.y : 0f;
 
-            // Пул стартует чуть позади машины
             _nextSpawnZ = _session.Player.Position.z - _config.SegmentsBehind * _config.SegmentLength;
 
             int total = _config.SegmentsAhead + _config.SegmentsBehind + 1;
@@ -98,4 +93,3 @@ namespace Game.Client.Services
         }
     }
 }
-

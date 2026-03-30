@@ -3,6 +3,7 @@ using Game.Client.Config;
 using Game.Client.Input;
 using Game.Client.Views;
 using Game.Core.Common;
+using Game.Core.Services;
 using Game.Core.Session;
 using Game.Core.Units;
 using UnityEngine;
@@ -10,9 +11,9 @@ using UnityEngine;
 namespace Game.Client.Units
 {
     /// <summary>
-    /// Pure C# turret controller. Registered in TickSystemRegistry.
-    /// Handles yaw rotation and continuous fire while Fire input is held.
-    /// Aim computation and laser sight are delegated to TurretAimResolver.
+    /// Контролер турелі гравця на чистому C#. Зареєстрований у <see cref="TickSystemRegistry"/>.
+    /// Обробляє горизонтальне обертання та безперервну стрільбу, поки утримується кнопка «Вогонь».
+    /// Обчислення прицілювання та лазерний приціл делеговані <see cref="TurretAimResolver"/>.
     /// </summary>
     public sealed class Turret : ITickSystem, IDisposable
     {
@@ -24,8 +25,13 @@ namespace Game.Client.Units
         private readonly TickSystemRegistry    _tickRegistry;
         private readonly ProjectileAttackSkill _attackSkill;
         private readonly TurretAimResolver     _aimResolver;
+        private readonly float                 _initialYaw;
+
         private float _fireTimer;
-        private float _initialYaw;
+
+        /// <summary>
+        /// Створює турель та реєструє її для тікання.
+        /// </summary>
         public Turret(
             Unit                 playerUnit,
             TurretView           view,
@@ -33,7 +39,8 @@ namespace Game.Client.Units
             IHorizontalDragInput dragInput,
             IFireInput           fireInput,
             GameSession          session,
-            TickSystemRegistry   tickRegistry)
+            TickSystemRegistry   tickRegistry,
+            ITargetsProvider     targetsProvider)
         {
             _view          = view;
             _config        = config;
@@ -43,23 +50,29 @@ namespace Game.Client.Units
             _tickRegistry  = tickRegistry;
             _fireTimer     = 0f;
             _initialYaw    = view.transform.eulerAngles.y;
-            _aimResolver = new TurretAimResolver(view, config, playerUnit);
-            _attackSkill = session.Player.Skills.Has<ProjectileAttackSkill>()
+            _aimResolver   = new TurretAimResolver(view, config, playerUnit, targetsProvider);
+            _attackSkill   = session.Player.Skills.Has<ProjectileAttackSkill>()
                 ? session.Player.Skills.Get<ProjectileAttackSkill>()
                 : null;
             _tickRegistry.Register(this);
         }
+
+        /// <summary>
+        /// Скасовує реєстрацію турелі з реєстру систем.
+        /// </summary>
         public void Dispose()
         {
             _tickRegistry.Unregister(this);
         }
+
+        /// <inheritdoc/>
         public void Tick(float dt)
         {
-            // Aim + laser: update every frame, even while paused
             _aimResolver.Update();
+
             if (_session.IsPaused) return;
             if (!_fireInput.IsPressed()) return;
-            // --- Yaw rotation (only while Fire is held) ---
+
             var dx = _dragInput.ReadDeltaX();
             if (Mathf.Abs(dx) > 0.0001f)
             {
@@ -73,13 +86,12 @@ namespace Game.Client.Units
                     _view.transform.eulerAngles = euler;
                 }
             }
-            // --- Continuous fire with cooldown ---
+
             _fireTimer -= dt;
             if (_fireTimer <= 0f)
             {
                 _fireTimer = _config.FireCooldown;
-                var context = new AttackContext(
-                    _session.Player, _view.Muzzle.position,
+                var context = new AttackContext(_session.Player, _view.Muzzle.position,
                     _aimResolver.FireDirection, _session.Player.TargetMask, null);
                 _attackSkill?.Use(context);
             }

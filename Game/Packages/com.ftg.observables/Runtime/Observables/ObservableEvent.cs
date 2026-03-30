@@ -145,17 +145,17 @@ namespace FTg.Common.Observables
     /// <summary>
     /// Observable подія без даних. Аналог UnityEvent (void).
     /// </summary>
-    public sealed class ObservableEvent : IObservable<Unit>
+    public sealed class ObservableEvent : IObservable<ObsUnit>
     {
-        private readonly ObservableEvent<Unit> _inner = new ObservableEvent<Unit>();
+        private readonly ObservableEvent<ObsUnit> _inner = new ObservableEvent<ObsUnit>();
 
-        public IDisposable Subscribe(IObserver<Unit> observer) => _inner.Subscribe(observer);
+        public IDisposable Subscribe(IObserver<ObsUnit> observer) => _inner.Subscribe(observer);
 
         public IDisposable Subscribe(Action onNext, Action<Exception> onError = null, Action onCompleted = null)
             => _inner.Subscribe(_ => onNext?.Invoke(), onError, onCompleted);
 
-        public void Invoke() => _inner.Raise(Unit.Default);
-        public void Raise() => _inner.Raise(Unit.Default);
+        public void Invoke() => _inner.Raise(ObsUnit.Default);
+        public void Raise() => _inner.Raise(ObsUnit.Default);
         public void Complete() => _inner.Complete();
         public void Error(Exception error) => _inner.Error(error);
     }

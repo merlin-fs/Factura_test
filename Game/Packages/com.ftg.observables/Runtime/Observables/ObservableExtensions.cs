@@ -5,9 +5,9 @@ namespace FTg.Common.Observables
 
     public static class ObservableExtensions
     {
-        public static IDisposable Subscribe(this IObservable<Unit> observable, Action callback)
+        public static IDisposable Subscribe(this IObservable<ObsUnit> observable, Action callback)
         {
-            return observable.Subscribe(new Observer<Unit>(_ => callback()));
+            return observable.Subscribe(new Observer<ObsUnit>(_ => callback()));
         }
 
         public static IDisposable Subscribe<T>(this IObservable<T> observable, Action<T> callback)
@@ -26,7 +26,7 @@ namespace FTg.Common.Observables
         }
 
 
-        public static IDisposable Once(this IObservable<Unit> observable, Action callback)
+        public static IDisposable Once(this IObservable<ObsUnit> observable, Action callback)
         {
             IDisposable subscription = null;
 
@@ -95,8 +95,8 @@ namespace FTg.Common.Observables
         }
     }
 
-    public readonly struct Unit
+    public readonly struct ObsUnit
     {
-        public static readonly Unit Default = default;
+        public static readonly ObsUnit Default = default;
     }
 }

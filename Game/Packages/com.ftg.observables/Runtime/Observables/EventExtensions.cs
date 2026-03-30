@@ -11,7 +11,7 @@ namespace FTg.Common.Observables
             return new EventHandlerObservable<TEventArgs>(subscribe, unsubscribe);
         }
 
-        public static IObservable<Unit> FromEvent(Action<Action> subscribe, Action<Action> unsubscribe)
+        public static IObservable<ObsUnit> FromEvent(Action<Action> subscribe, Action<Action> unsubscribe)
         {
             return new EventObservable(subscribe, unsubscribe);
         }
@@ -67,7 +67,7 @@ namespace FTg.Common.Observables
             }
         }
 
-        private class EventObservable : IObservable<Unit>
+        private class EventObservable : IObservable<ObsUnit>
         {
             private readonly Action<Action> _subscribe;
             private readonly Action<Action> _unsubscribe;
@@ -78,9 +78,9 @@ namespace FTg.Common.Observables
                 _unsubscribe = unsubscribe;
             }
 
-            public IDisposable Subscribe(IObserver<Unit> observer)
+            public IDisposable Subscribe(IObserver<ObsUnit> observer)
             {
-                void Handler() => observer.OnNext(Unit.Default);
+                void Handler() => observer.OnNext(ObsUnit.Default);
 
                 _subscribe(Handler);
 

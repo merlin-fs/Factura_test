@@ -3,8 +3,8 @@ using System.Collections.Generic;
 namespace Game.Core.Common
 {
     /// <summary>
-    /// Registers ITickSystem implementations and drives their Tick() call each frame.
-    /// Supports safe Register/Unregister from within a Tick (deferred apply).
+    /// Реєстр систем <see cref="ITickSystem"/>. Викликає метод <see cref="ITickSystem.Tick"/> кожен кадр.
+    /// Підтримує безпечну реєстрацію та скасування реєстрації під час виконання Tick (відкладене застосування).
     /// </summary>
     public sealed class TickSystemRegistry
     {
@@ -14,6 +14,11 @@ namespace Game.Core.Common
 
         private bool _isTicking;
 
+        /// <summary>
+        /// Реєструє систему для отримання викликів Tick.
+        /// Якщо реєстрація відбувається під час Tick — відкладається до кінця кадру.
+        /// </summary>
+        /// <param name="system">Система для реєстрації.</param>
         public void Register(ITickSystem system)
         {
             if (_isTicking)
@@ -22,6 +27,11 @@ namespace Game.Core.Common
                 _systems.Add(system);
         }
 
+        /// <summary>
+        /// Скасовує реєстрацію системи.
+        /// Якщо скасування відбувається під час Tick — відкладається до кінця кадру.
+        /// </summary>
+        /// <param name="system">Система для видалення.</param>
         public void Unregister(ITickSystem system)
         {
             if (_isTicking)
@@ -30,7 +40,10 @@ namespace Game.Core.Common
                 _systems.Remove(system);
         }
 
-        /// <summary>Tick all registered systems then apply deferred adds/removes.</summary>
+        /// <summary>
+        /// Викликає Tick у всіх зареєстрованих систем, потім застосовує відкладені зміни.
+        /// </summary>
+        /// <param name="dt">Дельта-час у секундах.</param>
         public void Tick(float dt)
         {
             _isTicking = true;
@@ -39,7 +52,6 @@ namespace Game.Core.Common
 
             _isTicking = false;
 
-            // Apply deferred removes first to avoid stale references
             foreach (var t in _pendingRemove)
                 _systems.Remove(t);
 
@@ -51,7 +63,9 @@ namespace Game.Core.Common
             _pendingAdd.Clear();
         }
 
-        /// <summary>Remove all registrations (call on session end).</summary>
+        /// <summary>
+        /// Видаляє всі реєстрації. Викликати наприкінці сесії.
+        /// </summary>
         public void Clear()
         {
             _systems.Clear();
@@ -60,4 +74,3 @@ namespace Game.Core.Common
         }
     }
 }
-

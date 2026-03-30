@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace Game.Core.Units
 {
     /// <summary>
-    /// Typed container for a unit's runtime skills.
-    /// Built once from UnitConfig.CreateSkills() and owned by Unit.
+    /// Типізований контейнер навичок юніта, що виконується під час гри.
+    /// Будується один раз із <see cref="UnitConfig.CreateSkills"/> і зберігається в <see cref="Unit"/>.
     /// </summary>
     public sealed class UnitSkills
     {
@@ -18,10 +18,13 @@ namespace Game.Core.Units
                 Add(s.GetType(), s);
         }
 
+        /// <summary>
+        /// Додає навичку до контейнера за типом.
+        /// </summary>
         public void Add<TSkill>(TSkill skill) where TSkill : class, ISkill
             => Add(typeof(TSkill), skill);
 
-        /// <summary>All unique skill instances — used for batch injection in Unit ctor.</summary>
+        /// <summary>Усі унікальні екземпляри навичок — для пакетного впровадження залежностей у конструкторі юніта.</summary>
         public IReadOnlyList<ISkill> All => _unique;
 
         private void Add(Type concreteType, ISkill skill)
@@ -31,6 +34,10 @@ namespace Game.Core.Units
             RegisterSkillInterfaces(skill);
         }
 
+        /// <summary>
+        /// Повертає навичку за типом. Кидає виняток, якщо навичка не зареєстрована.
+        /// </summary>
+        /// <typeparam name="TSkill">Тип навички.</typeparam>
         public TSkill Get<TSkill>() where TSkill : class, ISkill
         {
             if (_skills.TryGetValue(typeof(TSkill), out var skill))
@@ -38,6 +45,10 @@ namespace Game.Core.Units
             throw new InvalidOperationException($"Skill '{typeof(TSkill).Name}' is not registered on unit.");
         }
 
+        /// <summary>
+        /// Перевіряє, чи зареєстрована навичка вказаного типу.
+        /// </summary>
+        /// <typeparam name="TSkill">Тип навички.</typeparam>
         public bool Has<TSkill>() where TSkill : class, ISkill
             => _skills.ContainsKey(typeof(TSkill));
 

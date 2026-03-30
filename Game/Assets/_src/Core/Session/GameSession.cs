@@ -1,67 +1,97 @@
-using Game.Core.Events;
+using System;
+using FTg.Common.Observables;
+using Game.Core.Services;
 using Game.Core.Units;
-using UnityEngine;
 
 namespace Game.Core.Session
 {
     /// <summary>
-    /// Holds per-session state: events bus, game state, player unit reference, pause flag.
-    /// Lifecycle methods are the only authoritative way to change state from outside.
+    /// Зберігає стан поточної ігрової сесії: шину подій, стан гри, посилання на гравця та ознаку паузи.
+    /// Методи життєвого циклу є єдиним авторитетним способом зміни стану ззовні.
     /// </summary>
     public sealed class GameSession
     {
-        public GameEvents Events          { get; }
+        /// <summary>Поточний стан гри.</summary>
         public GameState  State           { get; private set; } = GameState.WaitingToStart;
+        /// <summary>Подія, що спрацьовує при зміні стану гри.</summary>
+        public IObservable<GameState> GameStateChanged => _gameStateChanged;
+
+        /// <summary>Статистика поточної сесії.</summary>
+        public GameStatistics GameStatistics { get; private set; }
+        /// <summary>Чи знаходиться гра на паузі.</summary>
         public bool       IsPaused        { get; private set; } = true;
+        /// <summary>Юніт гравця.</summary>
         public Unit       Player          { get; private set; }
+        /// <summary>Координата Z стартової позиції гравця.</summary>
         public float      StartPositionZ  { get; private set; }
 
-        public GameSession(GameEvents events)
+        private readonly ObservableEvent<GameState> _gameStateChanged = new();
+
+        /// <summary>
+        /// Створює нову сесію зі вказаною статистикою.
+        /// </summary>
+        /// <param name="gameStatistics">Об'єкт статистики сесії.</param>
+        public GameSession(GameStatistics gameStatistics)
         {
-            Events = events;
+            GameStatistics = gameStatistics;
         }
 
-        /// <summary>Called once by GameSessionBuilder after the player unit is ready.</summary>
+        /// <summary>
+        /// Ініціалізує сесію після створення юніта гравця.
+        /// Викликається один раз із <c>GameSessionBuilder</c>.
+        /// </summary>
+        /// <param name="player">Готовий юніт гравця.</param>
         public void Initialize(Unit player)
         {
             Player         = player;
             StartPositionZ = player.Position.z;
         }
 
-        // ------------------------------------------------------------------ lifecycle
-
-        /// <summary>Начать сессию: снять паузу и перейти в Playing.</summary>
+        /// <summary>
+        /// Починає сесію: знімає паузу та переходить у стан <see cref="GameState.Playing"/>.
+        /// </summary>
         public void Begin()
         {
             IsPaused = false;
             SetState(GameState.Playing);
         }
 
-        /// <summary>Поставить на паузу без изменения GameState.</summary>
+        /// <summary>
+        /// Ставить гру на паузу без зміни <see cref="State"/>.
+        /// </summary>
         public void Pause() => IsPaused = true;
 
-        /// <summary>Снять паузу без изменения GameState.</summary>
+        /// <summary>
+        /// Знімає паузу без зміни <see cref="State"/>.
+        /// </summary>
         public void Resume() => IsPaused = false;
 
-        /// <summary>Завершить победой: пауза + Win.</summary>
+        /// <summary>
+        /// Завершує сесію перемогою: пауза та стан <see cref="GameState.Win"/>.
+        /// </summary>
         public void FinishWin()
         {
             IsPaused = true;
             SetState(GameState.Win);
         }
 
-        /// <summary>Завершить поражением: пауза + Lose.</summary>
+        /// <summary>
+        /// Завершує сесію поразкою: пауза та стан <see cref="GameState.Lose"/>.
+        /// </summary>
         public void FinishLose()
         {
             IsPaused = true;
             SetState(GameState.Lose);
         }
 
-        /// <summary>Changes state and fires GameStateChanged event.</summary>
+        /// <summary>
+        /// Встановлює новий стан та викликає подію <see cref="GameStateChanged"/>.
+        /// </summary>
+        /// <param name="newState">Новий стан гри.</param>
         public void SetState(GameState newState)
         {
             State = newState;
-            Events.GameStateChanged.Invoke(newState);
+            _gameStateChanged.Raise(newState);
         }
     }
 }
