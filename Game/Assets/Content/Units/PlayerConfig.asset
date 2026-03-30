@@ -40,4 +40,4 @@ MonoBehaviour:
     - rid: 4280838138503364683
       type: {class: HpStat, ns: Game.Core.Units, asm: Game.Core}
       data:
-        max: 100
+        max: 300

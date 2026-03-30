@@ -15,11 +15,10 @@ namespace Game.Client.Common
         [SerializeField] private Transform unitsRoot;
         
         [Header("Car")]
-        public PlayerConfig PlayerConfig;
+        [field: SerializeField]
+        public PlayerConfig PlayerConfig {get; private set;}
         [SerializeField] private Transform carTransform;
         [SerializeField] private Transform turretTransform;
-        [SerializeField] private float carSpeed = 8f;
-        [SerializeField] private int carMaxHp = 100;
 
         [Header("Turret")]
         [SerializeField] private InputActionReference horizontalDragAction;
@@ -51,10 +50,14 @@ namespace Game.Client.Common
         [SerializeField, Min(0f)] private float cameraSwaySpeed = 0.4f;
 
         [Header("UI")] 
-        public GameObject BeginGamePanel;
-        public GameObject WinPanel;
-        public GameObject LosePanel;
-        public GameObject HudGame;
+        [field: SerializeField]
+        public GameObject BeginGamePanel {get; private set;}
+        [field: SerializeField]
+        public GameObject WinPanel {get; private set;}
+        [field: SerializeField]
+        public GameObject LosePanel {get; private set;}
+        [field: SerializeField]
+        public GameObject HudGame {get; private set;}
 
         public Transform           GroundRoot           => groundRoot;
         public GroundLooperConfig  GroundLooperConfig   => groundLooperConfig;

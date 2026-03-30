@@ -13,6 +13,6 @@ namespace Game.Core.Units
         /// </summary>
         /// <param name="unit">Юніт, для якого визначається точка прицілювання.</param>
         /// <returns>Точка прицілювання у світовому просторі.</returns>
-        public static Vector3 Resolve(Unit unit) => unit.Position;
+        public static Vector3 Resolve(Unit unit) => unit.AimPoint;
     }
 }
