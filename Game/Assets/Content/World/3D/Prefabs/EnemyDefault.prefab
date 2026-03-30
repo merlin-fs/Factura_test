@@ -80,6 +80,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.Client::Game.Client.Views.EnemyView
   animator: {fileID: 7010992195870746050}
   vfxRoot: {fileID: 5127947769667576113}
+  aimPoint: {fileID: 5127947769667576113}
 --- !u!114 &4877917038330234610
 MonoBehaviour:
   m_ObjectHideFlags: 0
